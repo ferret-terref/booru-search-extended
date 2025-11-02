@@ -211,8 +211,8 @@
         .tqb-input-row input { flex:1;border:none;border-radius:.4rem;padding:.5rem;font-size:.9rem; background:#1f2937; color:#f8fafc; }
         .tqb-input-row select { border:none;border-radius:.4rem;padding:.5rem;font-size:.9rem;min-width:120px; background:#1f2937; color:#f8fafc; }
         .tqb-input-row button { background:#3b82f6;color:white;border:none;border-radius:.4rem;padding:.5rem .8rem;cursor:pointer;}
-        .tqb-tree { background:#0f172a;border-radius:.4rem;padding:.8rem;margin-bottom:.8rem;min-height:120px;}
-        .tqb-tree-item { margin:.3rem 0;}
+        .tqb-tree { background:#0f172a;border-radius:.4rem;padding:.8rem;margin-bottom:.8rem;}
+        .tqb-tree-item { margin:.3rem 0; background: transparent; }
         .tqb-tree-group { border-left:2px solid #475569;padding-left:.8rem;margin-left:.5rem;}
         .tqb-tag-item { background:#374151;padding:.4rem .6rem;border-radius:.3rem;display:inline-flex;align-items:flex-start;gap:.4rem;margin:.2rem;cursor:grab;max-width:100%;min-width:0;}
         .tqb-tag-item:active { cursor:grabbing;}
@@ -237,7 +237,8 @@
         .tqb-favorites-list { max-height:200px;overflow-y:auto; background: transparent; }
         .tqb-favorite-item { background:#374151;border-radius:.3rem;padding:.6rem;margin:.3rem 0;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;transition:background .2s;}
         .tqb-favorite-item:hover { background:#4b5563;}
-        .tqb-favorite-info { flex:1;min-width:0;margin-right:.5rem;}
+        .tqb-favorite-info { flex:1;min-width:0;margin-right:.5rem; background: transparent; }
+        .tqb-favorite-info > * { background: transparent; }
         .tqb-favorite-name { color:#f8fafc;font-weight:500;font-size:.9rem;}
         .tqb-favorite-query { color:#9ca3af;font-size:.8rem;font-family:monospace;margin-top:.2rem;word-break:break-word;line-height:1.3;}
         .tqb-favorite-date { color:#6b7280;font-size:.75rem;margin-top:.2rem;}
