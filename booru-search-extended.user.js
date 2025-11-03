@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Booru Search Extended
-// @version      1.1
+// @version      1.2
 // @description  Advanced tag builder with tree-based UI and robust parsing - works on multiple booru sites
 // @author       ferret-terref
 // @homepageURL  https://github.com/ferret-terref/booru-search-extended
