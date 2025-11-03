@@ -263,6 +263,7 @@
         .tqb-input-row { display: flex; gap: var(--tqb-spacing-sm); margin-bottom: var(--tqb-spacing-md); flex-wrap: wrap; justify-content: space-between; background: var(--tqb-bg-secondary); padding: var(--tqb-spacing-md); border-radius: var(--tqb-radius-md); }
         .tqb-input-row input, .tqb-input-row select { border: none; border-radius: var(--tqb-radius-md); padding: var(--tqb-spacing-sm); font-size: var(--tqb-font-md); background: var(--tqb-bg-input); color: var(--tqb-text-primary); }
         .tqb-input-row input { flex: 1; }
+        .tqb-input-row input:focus { background: var(--tqb-bg-input) !important; }
         .tqb-input-row select { min-width: 120px; }
         .tqb-input-row button { background: #3b82f6; color: white; border: none; border-radius: var(--tqb-radius-md); padding: var(--tqb-spacing-md) var(--tqb-spacing-md); cursor: pointer; }
         .tqb-input-row button:hover { background: #2563eb; }
@@ -289,9 +290,9 @@
         .tqb-favorites-section { background: var(--tqb-bg-secondary); border-radius: var(--tqb-radius-md); padding: var(--tqb-spacing-md); margin-bottom: var(--tqb-spacing-md); }
         .tqb-favorites-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--tqb-spacing-md); background: transparent; }
         .tqb-favorites-title { color: var(--tqb-accent-amber); margin: 0; font-size: var(--tqb-font-lg); font-weight: 600; background: transparent; }
-        .tqb-favorites-search { margin-bottom: var(--tqb-spacing-md); background: transparent; }
-        .tqb-favorites-search input { width: 100%; padding: var(--tqb-spacing-sm); border: 1px solid var(--tqb-border-color); border-radius: var(--tqb-radius-sm); background: var(--tqb-bg-input); color: var(--tqb-text-primary); font-size: var(--tqb-font-md); }
-        .tqb-favorites-search input:focus { outline: none; border-color: var(--tqb-accent-blue); }
+        .tqb-favorites-search { margin-bottom: var(--tqb-spacing-md); background: transparent; margin-right: var(--tqb-spacing-lg); }
+        .tqb-favorites-search input { width: 100%; padding: var(--tqb-spacing-sm); border: none; border-radius: var(--tqb-radius-sm); background: var(--tqb-bg-input); color: var(--tqb-text-primary); font-size: var(--tqb-font-md); }
+        .tqb-favorites-search input:focus { background: var(--tqb-bg-input) !important; }
         .tqb-favorites-list { max-height: 200px; overflow-y: auto; background: transparent; }
         .tqb-favorite-item { background: var(--tqb-bg-tertiary); border-radius: var(--tqb-radius-sm); padding: var(--tqb-spacing-md); margin: var(--tqb-spacing-sm) 0; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; transition: background .2s; }
         .tqb-favorite-item:hover { background: var(--tqb-bg-hover); }
@@ -301,6 +302,8 @@
         .tqb-favorite-query { color: var(--tqb-text-secondary); font-size: var(--tqb-font-sm); font-family: monospace; margin-top: var(--tqb-spacing-sm); word-break: break-word; line-height: 1.3; }
         .tqb-favorite-date { color: var(--tqb-text-tertiary); font-size: var(--tqb-font-sm); margin-top: var(--tqb-spacing-sm); }
         .tqb-favorite-actions { display: flex; gap: var(--tqb-spacing-sm); background: transparent; }
+        .tqb-favorite-edit { background: var(--tqb-accent-blue); color: white; border: none; border-radius: var(--tqb-spacing-sm); padding: var(--tqb-spacing-sm) var(--tqb-spacing-sm); font-size: var(--tqb-font-sm); cursor: pointer; }
+        .tqb-favorite-edit:hover { background: var(--tqb-accent-blue-dark); }
         .tqb-favorite-delete { background: var(--tqb-accent-red); color: white; border: none; border-radius: var(--tqb-spacing-sm); padding: var(--tqb-spacing-sm) var(--tqb-spacing-sm); font-size: var(--tqb-font-sm); cursor: pointer; }
         .tqb-favorite-delete:hover { background: var(--tqb-accent-red-hover); }
         /* Toggle switch checked state */
@@ -330,6 +333,20 @@
         .tqb-shortcut-item { display: flex; justify-content: space-between; align-items: center; padding: var(--tqb-spacing-md); margin-bottom: var(--tqb-spacing-sm); background: var(--tqb-bg-secondary); border-radius: var(--tqb-radius-sm); }
         .tqb-shortcut-item strong { color: var(--tqb-accent-blue); font-family: monospace; min-width: 140px; }
         .tqb-shortcut-item span { color: var(--tqb-text-secondary); flex: 1; }
+        /* Dialog */
+        .tqb-dialog { background: var(--tqb-bg-primary); color: var(--tqb-text-primary); border-radius: var(--tqb-radius-lg); padding: var(--tqb-spacing-lg); max-width: 400px; width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .tqb-dialog-title { font-size: var(--tqb-font-lg); font-weight: 600; margin-bottom: var(--tqb-spacing-md); color: var(--tqb-text-primary); }
+        .tqb-dialog-message { font-size: var(--tqb-font-md); margin-bottom: var(--tqb-spacing-lg); color: var(--tqb-text-secondary); line-height: 1.5; }
+        .tqb-dialog-input { width: 100%; padding: var(--tqb-spacing-sm); border: none; border-radius: var(--tqb-radius-sm); background: var(--tqb-bg-input); color: var(--tqb-text-primary); font-size: var(--tqb-font-md); margin-bottom: var(--tqb-spacing-lg); }
+        .tqb-dialog-input:focus { background: var(--tqb-bg-input) !important; }
+        .tqb-dialog-buttons { display: flex; gap: var(--tqb-spacing-sm); justify-content: flex-end; }
+        .tqb-dialog-btn { border: none; border-radius: var(--tqb-radius-sm); padding: var(--tqb-spacing-sm) var(--tqb-spacing-lg); cursor: pointer; font-size: var(--tqb-font-md); font-weight: 500; }
+        .tqb-dialog-btn-primary { background: var(--tqb-accent-blue); color: white; }
+        .tqb-dialog-btn-primary:hover { background: var(--tqb-accent-blue-dark); }
+        .tqb-dialog-btn-danger { background: var(--tqb-accent-red); color: white; }
+        .tqb-dialog-btn-danger:hover { background: var(--tqb-accent-red-hover); }
+        .tqb-dialog-btn-secondary { background: var(--tqb-bg-tertiary); color: var(--tqb-text-primary); }
+        .tqb-dialog-btn-secondary:hover { background: var(--tqb-bg-hover); }
     `;
   }
 
@@ -428,8 +445,16 @@
                 <h3 class="tqb-modal-title" id="tqb-modal-title">⭐ Saved Favorites</h3>
                 <button class="tqb-modal-close" id="tqb-modal-close" aria-label="Close favorites modal">✕</button>
             </div>
-            <div class="tqb-favorites-search">
-                <input id="tqb-modal-favorites-filter" placeholder="🔍 Search favorites..." type="text" aria-label="Search favorites">
+            <div style="display:flex;gap:var(--tqb-spacing-sm);margin-bottom:var(--tqb-spacing-md);">
+                <div class="tqb-favorites-search" style="flex:1;margin-bottom:0;">
+                    <input id="tqb-modal-favorites-filter" placeholder="🔍 Search favorites..." type="text" aria-label="Search favorites">
+                </div>
+                <select id="tqb-favorites-sort" aria-label="Sort favorites" style="border:none;border-radius:var(--tqb-radius-sm);padding:var(--tqb-spacing-sm);font-size:var(--tqb-font-md);background:var(--tqb-bg-input);color:var(--tqb-text-primary);">
+                    <option value="date-desc">Newest First</option>
+                    <option value="date-asc">Oldest First</option>
+                    <option value="name-asc">Name (A-Z)</option>
+                    <option value="name-desc">Name (Z-A)</option>
+                </select>
             </div>
             <div class="tqb-favorites-list" id="tqb-modal-favorites-list" style="max-height:60vh;">
                 <div class="tqb-empty">No favorites saved yet</div>
@@ -508,6 +533,7 @@
     const modalCloseBtn = modalOverlay.querySelector('#tqb-modal-close');
     const modalFavoritesFilter = modalOverlay.querySelector('#tqb-modal-favorites-filter');
     const modalFavoritesList = modalOverlay.querySelector('#tqb-modal-favorites-list');
+    const favoritesSort = modalOverlay.querySelector('#tqb-favorites-sort');
 
     let tags = [];
 
@@ -527,6 +553,136 @@
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
       };
+    }
+
+    // --- Custom Dialogs ---
+    /**
+     * Show custom alert dialog
+     * @param {string} message - Message to display
+     * @returns {Promise<void>}
+     */
+    function showAlert(message) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'tqb-modal-overlay';
+        overlay.style.display = 'flex';
+        overlay.innerHTML = `
+          <div class="tqb-dialog">
+            <div class="tqb-dialog-message">${escapeHtml(message)}</div>
+            <div class="tqb-dialog-buttons">
+              <button class="tqb-dialog-btn tqb-dialog-btn-primary">OK</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const okBtn = overlay.querySelector('.tqb-dialog-btn-primary');
+        const close = () => {
+          overlay.remove();
+          resolve();
+        };
+
+        okBtn.addEventListener('click', close);
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) close();
+        });
+        document.addEventListener('keydown', function escHandler(e) {
+          if (e.key === 'Escape') {
+            document.removeEventListener('keydown', escHandler);
+            close();
+          }
+        });
+      });
+    }
+
+    /**
+     * Show custom confirm dialog
+     * @param {string} message - Message to display
+     * @returns {Promise<boolean>} True if confirmed, false if cancelled
+     */
+    function showConfirm(message) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'tqb-modal-overlay';
+        overlay.style.display = 'flex';
+        overlay.innerHTML = `
+          <div class="tqb-dialog">
+            <div class="tqb-dialog-message">${escapeHtml(message)}</div>
+            <div class="tqb-dialog-buttons">
+              <button class="tqb-dialog-btn tqb-dialog-btn-secondary">Cancel</button>
+              <button class="tqb-dialog-btn tqb-dialog-btn-danger">Confirm</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const cancelBtn = overlay.querySelector('.tqb-dialog-btn-secondary');
+        const confirmBtn = overlay.querySelector('.tqb-dialog-btn-danger');
+
+        const close = (result) => {
+          overlay.remove();
+          resolve(result);
+        };
+
+        cancelBtn.addEventListener('click', () => close(false));
+        confirmBtn.addEventListener('click', () => close(true));
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) close(false);
+        });
+        document.addEventListener('keydown', function escHandler(e) {
+          if (e.key === 'Escape') {
+            document.removeEventListener('keydown', escHandler);
+            close(false);
+          }
+        });
+      });
+    }
+
+    /**
+     * Show custom prompt dialog
+     * @param {string} message - Message to display
+     * @param {string} defaultValue - Default input value
+     * @returns {Promise<string|null>} Input value or null if cancelled
+     */
+    function showPrompt(message, defaultValue = '') {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'tqb-modal-overlay';
+        overlay.style.display = 'flex';
+        overlay.innerHTML = `
+          <div class="tqb-dialog">
+            <div class="tqb-dialog-title">${escapeHtml(message)}</div>
+            <input type="text" class="tqb-dialog-input" value="${escapeHtml(defaultValue)}">
+            <div class="tqb-dialog-buttons">
+              <button class="tqb-dialog-btn tqb-dialog-btn-secondary">Cancel</button>
+              <button class="tqb-dialog-btn tqb-dialog-btn-primary">OK</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const input = overlay.querySelector('.tqb-dialog-input');
+        const cancelBtn = overlay.querySelector('.tqb-dialog-btn-secondary');
+        const okBtn = overlay.querySelector('.tqb-dialog-btn-primary');
+
+        input.focus();
+        input.select();
+
+        const close = (result) => {
+          overlay.remove();
+          resolve(result);
+        };
+
+        cancelBtn.addEventListener('click', () => close(null));
+        okBtn.addEventListener('click', () => close(input.value));
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') close(input.value);
+          if (e.key === 'Escape') close(null);
+        });
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) close(null);
+        });
+      });
     }
 
     // --- Storage ---
@@ -672,6 +828,22 @@
     }
 
     /**
+     * Edit a favorite's name
+     * @param {number} id - Favorite ID to edit
+     */
+    async function editFavorite(id) {
+      const favorite = favorites.find(fav => fav.id === id);
+      if (!favorite) return;
+
+      const newName = await showPrompt('Edit favorite name:', favorite.name);
+      if (newName !== null && newName.trim() && newName.trim() !== favorite.name) {
+        favorite.name = newName.trim();
+        saveFavorites();
+        renderAllFavorites();
+      }
+    }
+
+    /**
      * Load a favorite's tags into the builder
      * @param {Object} favorite - Favorite object with tags property
      */
@@ -688,10 +860,29 @@
      */
     function renderFavorites(targetList = favoritesList, targetFilter = favoritesFilter) {
       const filterText = targetFilter.value.toLowerCase();
-      const filteredFavorites = favorites.filter(fav =>
+      let filteredFavorites = favorites.filter(fav =>
         fav.name.toLowerCase().includes(filterText) ||
         fav.query.toLowerCase().includes(filterText)
       );
+
+      // Apply sorting (only for modal view which has the sort dropdown)
+      if (targetList === modalFavoritesList && favoritesSort) {
+        const sortValue = favoritesSort.value;
+        filteredFavorites = [...filteredFavorites].sort((a, b) => {
+          switch (sortValue) {
+            case 'date-desc':
+              return new Date(b.createdAt) - new Date(a.createdAt);
+            case 'date-asc':
+              return new Date(a.createdAt) - new Date(b.createdAt);
+            case 'name-asc':
+              return a.name.localeCompare(b.name);
+            case 'name-desc':
+              return b.name.localeCompare(a.name);
+            default:
+              return 0;
+          }
+        });
+      }
 
       if (filteredFavorites.length === 0) {
         targetList.innerHTML = '<div class="tqb-empty">No favorites found</div>';
@@ -708,6 +899,7 @@
               <div class="tqb-favorite-date">Saved ${date}</div>
             </div>
             <div class="tqb-favorite-actions">
+              <button class="tqb-favorite-edit" data-id="${fav.id}" aria-label="Edit favorite: ${escapeHtml(fav.name)}">✏️</button>
               <button class="tqb-favorite-delete" data-id="${fav.id}" aria-label="Delete favorite: ${escapeHtml(fav.name)}">🗑️</button>
             </div>
           </div>
@@ -717,14 +909,14 @@
       // Add click handlers for loading and deleting favorites
       targetList.querySelectorAll('.tqb-favorite-item').forEach(item => {
         item.addEventListener('click', (e) => {
-          // Don't trigger load if clicking delete button
-          if (e.target.classList.contains('tqb-favorite-delete')) return;
+          // Don't trigger load if clicking action buttons
+          if (e.target.classList.contains('tqb-favorite-delete') || e.target.classList.contains('tqb-favorite-edit')) return;
 
           const id = parseInt(item.dataset.id);
           const favorite = favorites.find(fav => fav.id === id);
           if (favorite) {
             loadFavorite(favorite);
-            alert(`Loaded: ${favorite.name} ✅`);
+            showAlert(`Loaded: ${favorite.name} ✅`);
             // Close modal if we're in modal view
             if (targetList === modalFavoritesList) {
               modalOverlay.style.display = 'none';
@@ -733,12 +925,20 @@
         });
       });
 
-      targetList.querySelectorAll('.tqb-favorite-delete').forEach(btn => {
+      targetList.querySelectorAll('.tqb-favorite-edit').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           const id = parseInt(btn.dataset.id);
+          editFavorite(id);
+        });
+      });
+
+      targetList.querySelectorAll('.tqb-favorite-delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const id = parseInt(btn.dataset.id);
           const favorite = favorites.find(fav => fav.id === id);
-          if (favorite && confirm(`Delete favorite "${favorite.name}"?`)) {
+          if (favorite && await showConfirm(`Delete favorite "${favorite.name}"?`)) {
             deleteFavorite(id);
           }
         });
@@ -861,8 +1061,8 @@
           e.stopPropagation();
           moveItem(path, 1);
         };
-        addBtn.onclick = () => {
-          const tagName = prompt('Add tag to OR group:');
+        addBtn.onclick = async () => {
+          const tagName = await showPrompt('Add tag to OR group:');
           if (tagName && tagName.trim()) {
             item.items.push({
               op: 'and',
@@ -873,8 +1073,8 @@
           }
         };
 
-        deleteBtn.onclick = () => {
-          if (confirm('Delete this OR group?')) {
+        deleteBtn.onclick = async () => {
+          if (await showConfirm('Delete this OR group?')) {
             deleteItemAtPath(path);
             saveStorage();
             render();
@@ -922,8 +1122,8 @@
           e.stopPropagation();
           moveItem(path, 1);
         };
-        editBtn.onclick = () => {
-          const newValue = prompt(`Edit tag (${item.op.toUpperCase()}):`, item.tagValue);
+        editBtn.onclick = async () => {
+          const newValue = await showPrompt(`Edit tag (${item.op.toUpperCase()}):`, item.tagValue);
           if (newValue !== null) {
             item.tagValue = newValue.trim();
             saveStorage();
@@ -1134,7 +1334,7 @@
     }
 
     // --- Add tag ---
-    addBtn.addEventListener('click', () => {
+    addBtn.addEventListener('click', async () => {
       const val = input.value.trim();
       const op = opSelect.value;
       if (!val) return;
@@ -1150,7 +1350,7 @@
         const duplicates = items.filter(item => isDuplicateTag(item.tagValue, item.op));
         if (duplicates.length > 0) {
           const dupNames = duplicates.map(d => d.tagValue).join(', ');
-          if (!confirm(`Duplicate tag(s) found: ${dupNames}\n\nAdd anyway?`)) {
+          if (!await showConfirm(`Duplicate tag(s) found: ${dupNames}\n\nAdd anyway?`)) {
             return;
           }
         }
@@ -1164,7 +1364,7 @@
       } else {
         // Check for duplicate single tag
         if (isDuplicateTag(val, op)) {
-          if (!confirm(`Tag "${val}" with operation "${op.toUpperCase()}" already exists.\n\nAdd duplicate anyway?`)) {
+          if (!await showConfirm(`Tag "${val}" with operation "${op.toUpperCase()}" already exists.\n\nAdd duplicate anyway?`)) {
             return;
           }
         }
@@ -1191,7 +1391,7 @@
           render();
         } catch (e) {
           console.error('Parse error:', e);
-          alert('Error parsing query: ' + e.message);
+          showAlert('Error parsing query: ' + e.message);
         }
       }
     });
@@ -1213,31 +1413,31 @@
     });
 
     // --- Clear All Tags ---
-    clearAllBtn.addEventListener('click', () => {
+    clearAllBtn.addEventListener('click', async () => {
       if (tags.length === 0) {
-        alert('No tags to clear!');
+        showAlert('No tags to clear!');
         return;
       }
 
-      if (confirm('Clear all tags? This cannot be undone.')) {
+      if (await showConfirm('Clear all tags? This cannot be undone.')) {
         tags = [];
         saveStorage();
         render();
-        alert('All tags cleared! 🗑️');
+        showAlert('All tags cleared! 🗑️');
       }
     });
 
     // --- Save Favorite ---
-    saveFavoriteBtn.addEventListener('click', () => {
+    saveFavoriteBtn.addEventListener('click', async () => {
       if (tags.length === 0) {
-        alert('No tags to save! Add some tags first.');
+        showAlert('No tags to save! Add some tags first.');
         return;
       }
 
-      const name = prompt('Enter a name for this favorite search:');
+      const name = await showPrompt('Enter a name for this favorite search:');
       if (name && name.trim()) {
         addFavorite(name.trim(), tags);
-        alert('Favorite saved! 💾');
+        showAlert('Favorite saved! 💾');
       }
     });
 
@@ -1341,6 +1541,11 @@
 
     modalFavoritesFilter.addEventListener('input', () => {
       debouncedRenderFavorites(modalFavoritesList, modalFavoritesFilter);
+    });
+
+    // --- Favorites Sort ---
+    favoritesSort.addEventListener('change', () => {
+      renderFavorites(modalFavoritesList, modalFavoritesFilter);
     });
 
     /**
