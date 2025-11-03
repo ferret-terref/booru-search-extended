@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Booru Search Extended
-// @version      1.4
+// @version      1.3
 // @description  Advanced tag builder with tree-based UI and robust parsing - works on multiple booru sites
 // @author       ferret-terref
 // @homepageURL  https://github.com/ferret-terref/booru-search-extended
@@ -23,6 +23,7 @@
   const STORAGE_KEY = 'tqb-tags';
   const VISIBILITY_KEY = 'tqb-visibility';
   const THEME_KEY = 'tqb-theme';
+  const COMPACT_KEY = 'tqb-compact';
 
   // Site configuration for different booru sites
   const SITE_CONFIGS = {
@@ -212,6 +213,15 @@
           --tqb-border-color: #d1d5db;
           --tqb-border-color-alt: #9ca3af;
         }
+        /* Compact mode */
+        [data-tqb-compact="true"] {
+          --tqb-spacing-sm: .2rem;
+          --tqb-spacing-md: .35rem;
+          --tqb-spacing-lg: .65rem;
+          --tqb-font-sm: .75rem;
+          --tqb-font-md: .85rem;
+          --tqb-font-lg: 1rem;
+        }
         /* Global */
         button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--tqb-accent-blue); outline-offset: 2px; }
         .tqb-favorites-list::-webkit-scrollbar, .tqb-modal::-webkit-scrollbar { width: 8px; }
@@ -283,6 +293,12 @@
           background-color: var(--tqb-accent-blue);
         }
         #tqb-theme-toggle:checked + span + span {
+          transform: translateX(20px);
+        }
+        #tqb-compact-toggle:checked + span {
+          background-color: var(--tqb-accent-blue);
+        }
+        #tqb-compact-toggle:checked + span + span {
           transform: translateX(20px);
         }
         /* Modal */
@@ -427,6 +443,16 @@
                     </label>
                     <span style="color:var(--tqb-text-secondary);font-size:var(--tqb-font-md);">Light</span>
                 </div>
+                <h4 style="color: var(--tqb-accent-blue); margin-top: 0; margin-bottom: var(--tqb-spacing-md); font-size: var(--tqb-font-md);">📐 Spacing</h4>
+                <div style="display:flex;align-items:center;gap:var(--tqb-spacing-md);margin-bottom:var(--tqb-spacing-lg);">
+                    <span style="color:var(--tqb-text-secondary);font-size:var(--tqb-font-md);">Regular</span>
+                    <label style="display:inline-flex;align-items:center;cursor:pointer;position:relative;width:40px;height:20px;">
+                        <input type="checkbox" id="tqb-compact-toggle" style="opacity:0;width:0;height:0;">
+                        <span style="position:absolute;top:0;left:0;right:0;bottom:0;background-color:var(--tqb-bg-tertiary);border-radius:20px;transition:0.3s;"></span>
+                        <span style="position:absolute;height:14px;width:14px;left:3px;bottom:3px;background-color:white;border-radius:50%;transition:0.3s;"></span>
+                    </label>
+                    <span style="color:var(--tqb-text-secondary);font-size:var(--tqb-font-md);">Compact</span>
+                </div>
                 <h4 style="color: var(--tqb-accent-blue); margin-top: 0; margin-bottom: var(--tqb-spacing-md); font-size: var(--tqb-font-md);">⌨️ Keyboard Shortcuts</h4>
                 <div class="tqb-shortcut-item">
                     <strong>Ctrl + Enter</strong>
@@ -490,6 +516,7 @@
     const siteVisibilityKey = getSiteStorageKey(VISIBILITY_KEY);
     const siteFavoritesKey = getSiteStorageKey('tqb-favorites');
     const siteThemeKey = getSiteStorageKey(THEME_KEY);
+    const siteCompactKey = getSiteStorageKey(COMPACT_KEY);
 
     /**
      * Apply theme by setting data attribute on document
@@ -518,6 +545,35 @@
      */
     function saveTheme(theme) {
       localStorage.setItem(siteThemeKey, theme);
+    }
+
+    /**
+     * Apply compact mode by setting data attribute on document
+     * @param {boolean} compact - true for compact mode, false for regular
+     */
+    function applyCompact(compact) {
+      if (compact) {
+        document.documentElement.setAttribute('data-tqb-compact', 'true');
+      } else {
+        document.documentElement.removeAttribute('data-tqb-compact');
+      }
+    }
+
+    /**
+     * Load compact mode preference from storage
+     * @returns {boolean} true if compact mode enabled
+     */
+    function loadCompact() {
+      const stored = localStorage.getItem(siteCompactKey);
+      return stored === 'true';
+    }
+
+    /**
+     * Save compact mode preference to storage
+     * @param {boolean} compact - true for compact mode, false for regular
+     */
+    function saveCompact(compact) {
+      localStorage.setItem(siteCompactKey, compact.toString());
     }
 
     function saveStorage() {
@@ -1156,6 +1212,10 @@
       const themeToggle = helpModalOverlay.querySelector('#tqb-theme-toggle');
       const currentTheme = loadTheme();
       themeToggle.checked = currentTheme === 'light';
+      // Update compact toggle state
+      const compactToggle = helpModalOverlay.querySelector('#tqb-compact-toggle');
+      const currentCompact = loadCompact();
+      compactToggle.checked = currentCompact;
     });
 
     const helpModalClose = helpModalOverlay.querySelector('#tqb-help-modal-close');
@@ -1175,6 +1235,14 @@
       const theme = e.target.checked ? 'light' : 'dark';
       saveTheme(theme);
       applyTheme(theme);
+    });
+
+    // --- Compact Mode Toggle ---
+    const compactToggle = helpModalOverlay.querySelector('#tqb-compact-toggle');
+    compactToggle.addEventListener('change', (e) => {
+      const compact = e.target.checked;
+      saveCompact(compact);
+      applyCompact(compact);
     });
 
     // --- Keyboard Shortcuts ---
@@ -1398,6 +1466,10 @@
     // Load and apply theme
     const initialTheme = loadTheme();
     applyTheme(initialTheme);
+
+    // Load and apply compact mode
+    const initialCompact = loadCompact();
+    applyCompact(initialCompact);
 
     // Load and render favorites
     loadFavorites();
