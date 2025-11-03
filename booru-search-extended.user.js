@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Booru Search Extended
-// @version      1.1
+// @version      1.2
 // @description  Advanced tag builder with tree-based UI and robust parsing - works on multiple booru sites
 // @author       ferret-terref
 // @homepageURL  https://github.com/ferret-terref/booru-search-extended
@@ -188,82 +188,129 @@
     builder.className = 'tqb-builder';
     builder.innerHTML = `
         <style>
-        .tqb-toggle-btn { background:#1e293b;color:#f8fafc;border:none;border-radius:6px;padding:8px 14px;font-size:1rem;cursor:pointer;box-shadow:0 2px 8px #0003;margin-bottom:8px;display:block;width:100%; }
-        .tqb-builder { background:#1e293b;color:#f8fafc;padding:1rem;border-radius:.6rem;font-family:system-ui;font-size:.9rem;margin-bottom:1rem;transition:opacity 0.2s, visibility 0.2s;opacity:1;visibility:visible; }
-        .tqb-builder.tqb-hidden { opacity:0; visibility:hidden; pointer-events:none; }
-        .tqb-header { display:grid; grid-template-columns: 1fr 1fr; gap:.5rem; margin-bottom:.8rem; background:#0f172a; padding:.8rem; border-radius:.4rem; }
-        .tqb-header button { width: 100%;}
-        .tqb-sync-btn { background:#10b981;color:white;border:none;border-radius:.4rem;padding:.5rem .8rem;cursor:pointer;font-size:.85rem;display:flex;align-items:center;gap:.3rem;}
-        .tqb-sync-btn:hover { background:#059669;}
-        .tqb-input-row { display:flex; gap:.5rem; margin-bottom:.8rem; flex-wrap: wrap; justify-content: space-between; background:#0f172a; padding:.8rem; border-radius:.4rem; }
-        .tqb-input-row input { flex:1;border:none;border-radius:.4rem;padding:.5rem;font-size:.9rem; background:#1f2937; color:#f8fafc; }
-        .tqb-input-row select { border:none;border-radius:.4rem;padding:.5rem;font-size:.9rem;min-width:120px; background:#1f2937; color:#f8fafc; }
-        .tqb-input-row button { background:#3b82f6;color:white;border:none;border-radius:.4rem;padding:.5rem .8rem;cursor:pointer;}
-        .tqb-tree { background:#0f172a;border-radius:.4rem;padding:.8rem;margin-bottom:.8rem;}
-        .tqb-tree-item { margin:.3rem 0; background: transparent; }
-        .tqb-tree-group { border-left:2px solid #475569;padding-left:.8rem;margin-left:.5rem;}
-        .tqb-tag-item { background:#374151;padding:.4rem .6rem;border-radius:.3rem;display:inline-flex;align-items:flex-start;gap:.4rem;margin:.2rem;cursor:grab;max-width:100%;min-width:0;}
-        .tqb-tag-item:active { cursor:grabbing;}
-        .tqb-tag-item.tqb-dragging { opacity:0.5;transform:rotate(5deg);}
-        .tqb-tag-item.tqb-drag-over { border:2px dashed #60a5fa;background:#1e40af;}
-        .tqb-tag-label { font-size:.85rem; color: white;word-break:break-word;line-height:1.3;flex:1;min-width:0;}
-        .tqb-tag-btn { background:transparent;border:none;color:#9ca3af;cursor:pointer;padding:.2rem;border-radius:.2rem;font-size:.75rem;}
-        .tqb-tag-btn:hover { background:#4b5563;color:#f3f4f6;}
-        .tqb-move-btn { color:#60a5fa;}
-        .tqb-move-btn:hover { background:#1e40af;color:white;}
-        .tqb-group-header { color:#60a5fa;font-weight:500;margin-bottom:.3rem;font-size:.85rem;}
-        .tqb-empty { color:#9ca3af;font-style:italic;text-align:center;padding:1rem;background:#0f172a;border-radius:.4rem;border:1px solid #374151;}
-        .tqb-preview { background:#0f172a;border:1px solid #374151;border-radius:.4rem;padding:.8rem;font-family:monospace;font-size:.85rem;white-space:pre-wrap;word-break:break-all;}
-        .tqb-preview-section { background:#1e293b;border-radius:.4rem;padding:.8rem;border:1px solid #374151;}
-        .tqb-preview-label { color:#f8fafc;font-size:.9rem;margin-bottom:.5rem;background:#374151;padding:.5rem .8rem;border-radius:.4rem;font-weight:500;}
-        .tqb-favorites-section { background:#0f172a;border-radius:.4rem;padding:.8rem;margin-bottom:.8rem;}
-        .tqb-favorites-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;background:#374151;padding:.6rem .8rem;border-radius:.4rem;}
-        .tqb-favorites-header h4 { color:#fbbf24;margin:0;font-size:1rem;display:flex;align-items:center;gap:.3rem;background:transparent;padding:0;}
-        .tqb-favorites-search { margin-bottom:.8rem; background: transparent; }
-        .tqb-favorites-search input { width:100%;padding:.5rem;border:1px solid #374151;border-radius:.3rem;background:#1f2937;color:#f8fafc;font-size:.9rem;}
-        .tqb-favorites-search input:focus { outline:none;border-color:#60a5fa;}
-        .tqb-favorites-list { max-height:200px;overflow-y:auto; background: transparent; }
-        .tqb-favorite-item { background:#374151;border-radius:.3rem;padding:.6rem;margin:.3rem 0;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;transition:background .2s;}
-        .tqb-favorite-item:hover { background:#4b5563;}
-        .tqb-favorite-info { flex:1;min-width:0;margin-right:.5rem; background: transparent; }
+        :root {
+          --tqb-bg-primary: #1e293b;
+          --tqb-bg-secondary: #0f172a;
+          --tqb-bg-tertiary: #374151;
+          --tqb-bg-input: #1f2937;
+          --tqb-bg-hover: #4b5563;
+          --tqb-text-primary: #f8fafc;
+          --tqb-text-secondary: #9ca3af;
+          --tqb-text-tertiary: #6b7280;
+          --tqb-accent-green: #10b981;
+          --tqb-accent-green-hover: #059669;
+          --tqb-accent-amber: #fbbf24;
+          --tqb-accent-amber-hover: #f59e0b;
+          --tqb-accent-blue: #60a5fa;
+          --tqb-accent-blue-dark: #1e40af;
+          --tqb-accent-red: #dc2626;
+          --tqb-accent-red-hover: #b91c1c;
+          --tqb-border-color: #374151;
+          --tqb-border-color-alt: #475569;
+          --tqb-radius-sm: .3rem;
+          --tqb-radius-md: .5rem;
+          --tqb-radius-lg: .8rem;
+          --tqb-font-sm: .8rem;
+          --tqb-font-md: .9rem;
+          --tqb-font-lg: 1.1rem;
+          --tqb-spacing-sm: .3rem;
+          --tqb-spacing-md: .5rem;
+          --tqb-spacing-lg: 1rem;
+        }
+        /* Global */
+        button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--tqb-accent-blue); outline-offset: 2px; }
+        .tqb-favorites-list::-webkit-scrollbar, .tqb-modal::-webkit-scrollbar { width: 8px; }
+        .tqb-favorites-list::-webkit-scrollbar-track, .tqb-modal::-webkit-scrollbar-track { background: var(--tqb-bg-secondary); border-radius: var(--tqb-radius-sm); }
+        .tqb-favorites-list::-webkit-scrollbar-thumb, .tqb-modal::-webkit-scrollbar-thumb { background: var(--tqb-bg-tertiary); border-radius: var(--tqb-radius-sm); }
+        .tqb-favorites-list::-webkit-scrollbar-thumb:hover, .tqb-modal::-webkit-scrollbar-thumb:hover { background: var(--tqb-bg-hover); }
+        /* Builder */
+        .tqb-toggle-btn { background: var(--tqb-bg-primary); color: var(--tqb-text-primary); border: none; border-radius: 6px; padding: 8px 14px; font-size: var(--tqb-font-lg); cursor: pointer; box-shadow: 0 2px 8px #0003; margin: var(--tqb-spacing-lg) 0 8px; display: block; width: 100%; }
+        .tqb-builder { background: var(--tqb-bg-primary); color: var(--tqb-text-primary); padding: var(--tqb-spacing-lg); border-radius: var(--tqb-radius-lg); font-family: system-ui; font-size: var(--tqb-font-md); margin-bottom: var(--tqb-spacing-lg); transition: opacity 0.2s, visibility 0.2s; opacity: 1; visibility: visible; }
+        .tqb-builder.tqb-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        /* Buttons */
+        .tqb-header { display: grid; grid-template-columns: 1fr 1fr; gap: var(--tqb-spacing-sm); margin-bottom: var(--tqb-spacing-md); background: var(--tqb-bg-secondary); padding: var(--tqb-spacing-md); border-radius: var(--tqb-radius-md); }
+        .tqb-header button { width: 100%; }
+        .tqb-sync-btn, .tqb-clear-btn, .tqb-view-favorites-btn { border: none; border-radius: var(--tqb-radius-md); padding: var(--tqb-spacing-md) var(--tqb-spacing-md); cursor: pointer; font-size: var(--tqb-font-sm); display: flex; align-items: center; justify-content: center; gap: var(--tqb-spacing-sm); color: white; }
+        .tqb-sync-btn { background: var(--tqb-accent-green); }
+        .tqb-sync-btn:hover { background: var(--tqb-accent-green-hover); }
+        .tqb-save-btn { background: var(--tqb-accent-amber); color: var(--tqb-bg-primary); }
+        .tqb-save-btn:hover { background: var(--tqb-accent-amber-hover); }
+        .tqb-clear-btn { background: var(--tqb-accent-red); }
+        .tqb-clear-btn:hover { background: var(--tqb-accent-red-hover); }
+        .tqb-view-favorites-btn { background: var(--tqb-accent-amber); color: var(--tqb-bg-primary); font-weight: 500; }
+        .tqb-view-favorites-btn:hover { background: var(--tqb-accent-amber-hover); }
+        /* Input */
+        .tqb-input-row { display: flex; gap: var(--tqb-spacing-sm); margin-bottom: var(--tqb-spacing-md); flex-wrap: wrap; justify-content: space-between; background: var(--tqb-bg-secondary); padding: var(--tqb-spacing-md); border-radius: var(--tqb-radius-md); }
+        .tqb-input-row input, .tqb-input-row select { border: none; border-radius: var(--tqb-radius-md); padding: var(--tqb-spacing-sm); font-size: var(--tqb-font-md); background: var(--tqb-bg-input); color: var(--tqb-text-primary); }
+        .tqb-input-row input { flex: 1; }
+        .tqb-input-row select { min-width: 120px; }
+        .tqb-input-row button { background: #3b82f6; color: white; border: none; border-radius: var(--tqb-radius-md); padding: var(--tqb-spacing-md) var(--tqb-spacing-md); cursor: pointer; }
+        .tqb-input-row button:hover { background: #2563eb; }
+        /* Tree */
+        .tqb-tree { background: var(--tqb-bg-secondary); border-radius: var(--tqb-radius-md); padding: var(--tqb-spacing-md); margin-bottom: var(--tqb-spacing-md); }
+        .tqb-tree-item { margin: var(--tqb-spacing-sm) 0; background: transparent; }
+        .tqb-tree-group { border-left: 2px solid var(--tqb-border-color-alt); padding-left: var(--tqb-spacing-md); margin-left: var(--tqb-spacing-sm); }
+        .tqb-tag-item { background: var(--tqb-bg-tertiary); padding: var(--tqb-spacing-sm) .6rem; border-radius: var(--tqb-radius-sm); display: inline-flex; align-items: flex-start; gap: var(--tqb-spacing-sm); margin: var(--tqb-spacing-sm); cursor: grab; max-width: 100%; min-width: 0; }
+        .tqb-tag-item:active { cursor: grabbing; }
+        .tqb-tag-item.tqb-dragging { opacity: 0.5; transform: rotate(5deg); }
+        .tqb-tag-item.tqb-drag-over { border: 2px dashed var(--tqb-accent-blue); background: var(--tqb-accent-blue-dark); }
+        .tqb-tag-label { font-size: var(--tqb-font-sm); color: white; word-break: break-word; line-height: 1.3; flex: 1; min-width: 0; }
+        .tqb-tag-btn { background: transparent; border: none; color: var(--tqb-text-secondary); cursor: pointer; padding: var(--tqb-spacing-sm); border-radius: var(--tqb-spacing-sm); font-size: var(--tqb-font-sm); }
+        .tqb-tag-btn:hover { background: var(--tqb-bg-hover); color: var(--tqb-text-primary); }
+        .tqb-move-btn { color: var(--tqb-accent-blue); }
+        .tqb-move-btn:hover { background: var(--tqb-accent-blue-dark); color: white; }
+        .tqb-group-header { color: var(--tqb-accent-blue); font-weight: 500; margin-bottom: var(--tqb-spacing-sm); font-size: var(--tqb-font-sm); }
+        .tqb-empty { color: var(--tqb-text-secondary); font-style: italic; text-align: center; padding: var(--tqb-spacing-lg); background: var(--tqb-bg-secondary); border-radius: var(--tqb-radius-md); border: 1px solid var(--tqb-border-color); }
+        /* Preview */
+        .tqb-preview-section { background: var(--tqb-bg-primary); border-radius: var(--tqb-radius-md); padding: var(--tqb-spacing-md); border: 1px solid var(--tqb-border-color); }
+        .tqb-preview-label { color: var(--tqb-text-primary); font-size: var(--tqb-font-md); margin-bottom: var(--tqb-spacing-sm); background: var(--tqb-bg-tertiary); padding: var(--tqb-spacing-md) var(--tqb-spacing-md); border-radius: var(--tqb-radius-md); font-weight: 500; }
+        .tqb-preview { background: var(--tqb-bg-secondary); border: 1px solid var(--tqb-border-color); border-radius: var(--tqb-radius-md); padding: var(--tqb-spacing-md); font-family: monospace; font-size: var(--tqb-font-sm); white-space: pre-wrap; word-break: break-all; }
+        /* Favorites */
+        .tqb-favorites-section { background: var(--tqb-bg-secondary); border-radius: var(--tqb-radius-md); padding: var(--tqb-spacing-md); margin-bottom: var(--tqb-spacing-md); }
+        .tqb-favorites-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--tqb-spacing-md); background: transparent; }
+        .tqb-favorites-title { color: var(--tqb-accent-amber); margin: 0; font-size: var(--tqb-font-lg); font-weight: 600; background: transparent; }
+        .tqb-favorites-search { margin-bottom: var(--tqb-spacing-md); background: transparent; }
+        .tqb-favorites-search input { width: 100%; padding: var(--tqb-spacing-sm); border: 1px solid var(--tqb-border-color); border-radius: var(--tqb-radius-sm); background: var(--tqb-bg-input); color: var(--tqb-text-primary); font-size: var(--tqb-font-md); }
+        .tqb-favorites-search input:focus { outline: none; border-color: var(--tqb-accent-blue); }
+        .tqb-favorites-list { max-height: 200px; overflow-y: auto; background: transparent; }
+        .tqb-favorite-item { background: var(--tqb-bg-tertiary); border-radius: var(--tqb-radius-sm); padding: var(--tqb-spacing-md); margin: var(--tqb-spacing-sm) 0; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; transition: background .2s; }
+        .tqb-favorite-item:hover { background: var(--tqb-bg-hover); }
+        .tqb-favorite-info { flex: 1; min-width: 0; margin-right: var(--tqb-spacing-sm); background: transparent; }
         .tqb-favorite-info > * { background: transparent; }
-        .tqb-favorite-name { color:#f8fafc;font-weight:500;font-size:.9rem;}
-        .tqb-favorite-query { color:#9ca3af;font-size:.8rem;font-family:monospace;margin-top:.2rem;word-break:break-word;line-height:1.3;}
-        .tqb-favorite-date { color:#6b7280;font-size:.75rem;margin-top:.2rem;}
-        .tqb-favorite-actions { display:flex;gap:.3rem;}
-        .tqb-favorite-delete { background:#dc2626;color:white;border:none;border-radius:.2rem;padding:.3rem .5rem;font-size:.75rem;cursor:pointer;}
-        .tqb-favorite-delete:hover { background:#b91c1c;}
-        .tqb-clear-btn { background:#dc2626;color:white;border:none;border-radius:.4rem;padding:.5rem .8rem;cursor:pointer;font-size:.85rem;display:flex;align-items:center;gap:.3rem;}
-        .tqb-clear-btn:hover { background:#b91c1c;}
-        .tqb-modal-overlay { position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10000;display:none;justify-content:center;align-items:center;}
-        .tqb-modal { background:#1e293b;color:#f8fafc;border-radius:.8rem;padding:1.5rem;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;position:relative;}
-        .tqb-modal-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid #374151;padding-bottom:1rem;}
-        .tqb-modal-title { font-size:1.2rem;font-weight:600;color:#fbbf24;margin:0;}
-        .tqb-modal-close { background:#6b7280;color:white;border:none;border-radius:.3rem;padding:.5rem;cursor:pointer;font-size:1rem;width:2rem;height:2rem;display:flex;align-items:center;justify-content:center;}
-        .tqb-modal-close:hover { background:#4b5563;}
-        .tqb-view-favorites-btn { background:#fbbf24;color:#1e293b;border:none;border-radius:.4rem;padding:.5rem .8rem;cursor:pointer;font-size:.85rem;display:flex;align-items:center;gap:.3rem;font-weight:500;}
-        .tqb-view-favorites-btn:hover { background:#f59e0b;}
+        .tqb-favorite-name { color: var(--tqb-text-primary); font-weight: 500; font-size: var(--tqb-font-md); }
+        .tqb-favorite-query { color: var(--tqb-text-secondary); font-size: var(--tqb-font-sm); font-family: monospace; margin-top: var(--tqb-spacing-sm); word-break: break-word; line-height: 1.3; }
+        .tqb-favorite-date { color: var(--tqb-text-tertiary); font-size: var(--tqb-font-sm); margin-top: var(--tqb-spacing-sm); }
+        .tqb-favorite-actions { display: flex; gap: var(--tqb-spacing-sm); background: transparent; }
+        .tqb-favorite-delete { background: var(--tqb-accent-red); color: white; border: none; border-radius: var(--tqb-spacing-sm); padding: var(--tqb-spacing-sm) var(--tqb-spacing-sm); font-size: var(--tqb-font-sm); cursor: pointer; }
+        .tqb-favorite-delete:hover { background: var(--tqb-accent-red-hover); }
+        /* Modal */
+        .tqb-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; display: none; justify-content: center; align-items: center; }
+        .tqb-modal { background: var(--tqb-bg-primary); color: var(--tqb-text-primary); border-radius: var(--tqb-radius-lg); padding: var(--tqb-spacing-lg); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; }
+        .tqb-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--tqb-spacing-lg); border-bottom: 1px solid var(--tqb-border-color); padding-bottom: var(--tqb-spacing-lg); background: transparent; }
+        .tqb-modal-title { font-size: var(--tqb-font-lg); font-weight: 600; color: var(--tqb-accent-amber); margin: 0; background: transparent; }
+        .tqb-modal-close { background: var(--tqb-text-tertiary); color: white; border: none; border-radius: var(--tqb-radius-sm); padding: var(--tqb-spacing-sm); cursor: pointer; font-size: var(--tqb-font-lg); width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; }
+        .tqb-modal-close:hover { background: var(--tqb-bg-hover); }
         </style>
 
         <!-- Sync buttons -->
         <div class="tqb-header">
-            <button id="tqb-copy-from" class="tqb-sync-btn">📋 Copy from input</button>
-            <button id="tqb-paste-to" class="tqb-sync-btn">📤 Paste to input</button>
-            <button id="tqb-save-favorite" class="tqb-sync-btn">💾 Save Current</button>
-            <button id="tqb-clear-all" class="tqb-clear-btn">🗑️ Clear All</button>
+            <button id="tqb-copy-from" class="tqb-sync-btn" aria-label="Copy tags from page input">📋 Copy from input</button>
+            <button id="tqb-paste-to" class="tqb-sync-btn" aria-label="Paste tags to page input">📤 Paste to input</button>
+            <button id="tqb-save-favorite" class="tqb-sync-btn tqb-save-btn" aria-label="Save current tags as favorite">💾 Save Current</button>
+            <button id="tqb-clear-all" class="tqb-clear-btn" aria-label="Clear all tags">🗑️ Clear All</button>
         </div>
 
         <!-- Input row -->
         <div class="tqb-input-row">
-            <input id="tqb-input" placeholder="Enter tag name">
-            <select id="tqb-op">
+            <input id="tqb-input" placeholder="Enter tag name" aria-label="Tag name input">
+            <select id="tqb-op" aria-label="Tag operator">
                 <option value="and">AND</option>
                 <option value="or">OR group</option>
                 <option value="not">NOT (-tag)</option>
                 <option value="fuzzy">FUZZY (~)</option>
                 <option value="wildcard">WILDCARD (*)</option>
             </select>
-            <button id="tqb-add">Add</button>
+            <button id="tqb-add" aria-label="Add tag">Add</button>
         </div>
 
         <!-- Tree view -->
@@ -274,11 +321,11 @@
         <!-- Favorites section -->
         <div class="tqb-favorites-section">
             <div class="tqb-favorites-header">
-                <h4>⭐ Favorites</h4>
-                <button id="tqb-view-favorites" class="tqb-view-favorites-btn">⭐ View Favorites</button>
+                <span class="tqb-favorites-title">⭐ Favorites</span>
+                <button id="tqb-view-favorites" class="tqb-view-favorites-btn" aria-label="View all favorites">View All</button>
             </div>
             <div class="tqb-favorites-search">
-                <input id="tqb-favorites-filter" placeholder="🔍 Search favorites..." type="text">
+                <input id="tqb-favorites-filter" placeholder="🔍 Search favorites..." type="text" aria-label="Search favorites">
             </div>
             <div class="tqb-favorites-list" id="tqb-favorites-list">
                 <div class="tqb-empty">No favorites saved yet</div>
@@ -304,14 +351,17 @@
     // Create modal overlay and content
     const modalOverlay = document.createElement('div');
     modalOverlay.className = 'tqb-modal-overlay';
+    modalOverlay.setAttribute('role', 'dialog');
+    modalOverlay.setAttribute('aria-modal', 'true');
+    modalOverlay.setAttribute('aria-labelledby', 'tqb-modal-title');
     modalOverlay.innerHTML = `
         <div class="tqb-modal" id="tqb-favorites-modal">
             <div class="tqb-modal-header">
-                <h3 class="tqb-modal-title">⭐ Saved Favorites</h3>
-                <button class="tqb-modal-close" id="tqb-modal-close">✕</button>
+                <h3 class="tqb-modal-title" id="tqb-modal-title">⭐ Saved Favorites</h3>
+                <button class="tqb-modal-close" id="tqb-modal-close" aria-label="Close favorites modal">✕</button>
             </div>
             <div class="tqb-favorites-search">
-                <input id="tqb-modal-favorites-filter" placeholder="🔍 Search favorites..." type="text">
+                <input id="tqb-modal-favorites-filter" placeholder="🔍 Search favorites..." type="text" aria-label="Search favorites">
             </div>
             <div class="tqb-favorites-list" id="tqb-modal-favorites-list" style="max-height:60vh;">
                 <div class="tqb-empty">No favorites saved yet</div>
@@ -422,14 +472,14 @@
       targetList.innerHTML = filteredFavorites.map(fav => {
         const date = new Date(fav.createdAt).toLocaleDateString();
         return `
-          <div class="tqb-favorite-item" data-id="${fav.id}">
+          <div class="tqb-favorite-item" data-id="${fav.id}" role="button" tabindex="0" aria-label="Load favorite: ${escapeHtml(fav.name)}">
             <div class="tqb-favorite-info">
               <div class="tqb-favorite-name">${escapeHtml(fav.name)}</div>
               <div class="tqb-favorite-query">${escapeHtml(fav.query)}</div>
               <div class="tqb-favorite-date">Saved ${date}</div>
             </div>
             <div class="tqb-favorite-actions">
-              <button class="tqb-favorite-delete" data-id="${fav.id}">🗑️</button>
+              <button class="tqb-favorite-delete" data-id="${fav.id}" aria-label="Delete favorite: ${escapeHtml(fav.name)}">🗑️</button>
             </div>
           </div>
         `;
@@ -536,10 +586,10 @@
         div.innerHTML = `
           <div class="tqb-tag-item" draggable="true" data-path="${path.join(',')}">
             <span class="tqb-tag-label">OR Group (${item.items.length} items)</span>
-            <button class="tqb-tag-btn tqb-move-btn" title="Move up">↑</button>
-            <button class="tqb-tag-btn tqb-move-btn" title="Move down">↓</button>
-            <button class="tqb-tag-btn" title="Add item to group">+</button>
-            <button class="tqb-tag-btn" title="Delete group">❌</button>
+            <button class="tqb-tag-btn tqb-move-btn" title="Move up" aria-label="Move OR group up">↑</button>
+            <button class="tqb-tag-btn tqb-move-btn" title="Move down" aria-label="Move OR group down">↓</button>
+            <button class="tqb-tag-btn" title="Add item to group" aria-label="Add item to OR group">+</button>
+            <button class="tqb-tag-btn" title="Delete group" aria-label="Delete OR group">❌</button>
           </div>
         `;
 
@@ -597,10 +647,10 @@
         div.innerHTML = `
           <div class="tqb-tag-item" draggable="true" data-path="${path.join(',')}">
             <span class="tqb-tag-label">${opLabels[item.op]}${item.tagValue}</span>
-            <button class="tqb-tag-btn tqb-move-btn" title="Move up">↑</button>
-            <button class="tqb-tag-btn tqb-move-btn" title="Move down">↓</button>
-            <button class="tqb-tag-btn" title="Edit tag">✏️</button>
-            <button class="tqb-tag-btn" title="Delete tag">❌</button>
+            <button class="tqb-tag-btn tqb-move-btn" title="Move up" aria-label="Move tag up">↑</button>
+            <button class="tqb-tag-btn tqb-move-btn" title="Move down" aria-label="Move tag down">↓</button>
+            <button class="tqb-tag-btn" title="Edit tag" aria-label="Edit tag ${item.tagValue}">✏️</button>
+            <button class="tqb-tag-btn" title="Delete tag" aria-label="Delete tag ${item.tagValue}">❌</button>
           </div>
         `;
 
@@ -867,8 +917,6 @@
     pasteToBtn.addEventListener('click', () => {
       const query = buildQuery();
       if (query) {
-        console.log('Pasting query to input:', query);
-        console.log('InputEl Element:', inputEl);
         inputEl.value = query;
 
         // Trigger events so page notices the update
