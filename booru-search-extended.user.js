@@ -21,6 +21,7 @@
 (function () {
   'use strict';
   const STORAGE_KEY = 'tqb-tags';
+  const FAVORITES_KEY = 'tqb-favorites';
   const VISIBILITY_KEY = 'tqb-visibility';
   const THEME_KEY = 'tqb-theme';
   const COMPACT_KEY = 'tqb-compact';
@@ -135,21 +136,14 @@
     };
   }
 
-  /**
-   * Create site-specific storage key by appending hostname
-   * @param {string} baseKey - Base storage key
-   * @returns {string} Site-specific storage key
-   */
+  /** Create site-specific storage key by appending hostname */
   function getSiteStorageKey(baseKey) {
     const config = getCurrentSiteConfig();
     if (!config) return baseKey;
     return `${baseKey}-${config.hostname}`;
   }
 
-  /**
-   * Inject CSS to widen sidebar for better tag builder display
-   * @param {Object} config - Site configuration object
-   */
+  /** Inject CSS to widen sidebar for better tag builder display */
   function injectSiteCSS(config) {
     if (!config.sidebarCSS) return;
 
@@ -161,11 +155,7 @@
     console.log(`Tag Builder: Injected sidebar CSS for ${config.name}`);
   }
 
-  /**
-   * Wait for multiple DOM elements to exist before executing callback
-   * @param {string[]} selectors - Array of CSS selectors
-   * @param {Function} callback - Function to call with found elements
-   */
+  /** Wait for multiple DOM elements to exist before executing callback */
   const waitForElements = (selectors, callback) => {
     const found = selectors.map(s => document.querySelector(s));
     if (found.every(Boolean)) return callback(...found);
@@ -182,12 +172,8 @@
     });
   };
 
-  /**
-   * Generate CSS styles for the tag builder
-   * @returns {string} CSS stylesheet content
-   */
-  function generateCSS() {
-    return `
+  /** CSS styles for the tag builder */
+  const TQB_STYLES = `
         :root {
           --tqb-bg-primary: #1e293b;
           --tqb-bg-secondary: #0f172a;
@@ -309,30 +295,14 @@
         .tqb-favorite-delete { background: var(--tqb-accent-red); color: white; border: none; border-radius: var(--tqb-spacing-sm); padding: var(--tqb-spacing-sm) var(--tqb-spacing-sm); font-size: var(--tqb-font-sm); cursor: pointer; }
         .tqb-favorite-delete:hover { background: var(--tqb-accent-red-hover); }
         /* Toggle switch checked state */
-        #tqb-theme-toggle:checked + span {
-          background-color: var(--tqb-accent-blue);
-        }
-        #tqb-theme-toggle:checked + span + span {
-          transform: translateX(20px);
-        }
-        #tqb-compact-toggle:checked + span {
-          background-color: var(--tqb-accent-blue);
-        }
-        #tqb-compact-toggle:checked + span + span {
-          transform: translateX(20px);
-        }
-        #tqb-auto-submit-toggle:checked + span {
-          background-color: var(--tqb-accent-blue);
-        }
-        #tqb-auto-submit-toggle:checked + span + span {
-          transform: translateX(20px);
-        }
-        #tqb-show-preview-toggle:checked + span {
-          background-color: var(--tqb-accent-blue);
-        }
-        #tqb-show-preview-toggle:checked + span + span {
-          transform: translateX(20px);
-        }
+        #tqb-theme-toggle:checked + span { background-color: var(--tqb-accent-blue); }
+        #tqb-theme-toggle:checked + span + span { transform: translateX(20px);}
+        #tqb-compact-toggle:checked + span { background-color: var(--tqb-accent-blue); }
+        #tqb-compact-toggle:checked + span + span { transform: translateX(20px); }
+        #tqb-auto-submit-toggle:checked + span { background-color: var(--tqb-accent-blue); }
+        #tqb-auto-submit-toggle:checked + span + span { transform: translateX(20px); }
+        #tqb-show-preview-toggle:checked + span { background-color: var(--tqb-accent-blue); }
+        #tqb-show-preview-toggle:checked + span + span { transform: translateX(20px); }
         /* Modal */
         .tqb-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; display: none; justify-content: center; align-items: center; }
         .tqb-modal { background: var(--tqb-bg-primary); color: var(--tqb-text-primary); border-radius: var(--tqb-radius-lg); padding: var(--tqb-spacing-lg); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; }
@@ -361,8 +331,25 @@
         .tqb-dialog-btn-danger:hover { background: var(--tqb-accent-red-hover); }
         .tqb-dialog-btn-secondary { background: var(--tqb-bg-tertiary); color: var(--tqb-text-primary); }
         .tqb-dialog-btn-secondary:hover { background: var(--tqb-bg-hover); }
+        /* Utility classes */
+        .tqb-flex-row { display: flex; gap: var(--tqb-spacing-sm); margin-bottom: var(--tqb-spacing-md); }
+        .tqb-flex-1 { flex: 1; }
+        .tqb-btn-blue { background: var(--tqb-accent-blue); color: white; border: none; border-radius: var(--tqb-radius-sm); padding: var(--tqb-spacing-sm); font-size: var(--tqb-font-md); cursor: pointer; }
+        .tqb-btn-blue:hover { background: var(--tqb-accent-blue-dark); }
+        .tqb-btn-amber { background: var(--tqb-accent-amber); color: white; border: none; border-radius: var(--tqb-radius-sm); padding: var(--tqb-spacing-sm); font-size: var(--tqb-font-md); cursor: pointer; }
+        .tqb-btn-amber:hover { background: var(--tqb-accent-amber-hover); }
+        .tqb-btn-gray { background: var(--tqb-text-tertiary); }
+        .tqb-btn-gray:hover { background: var(--tqb-bg-hover); }
+        .tqb-section-title { color: var(--tqb-accent-blue); margin-top: 0; margin-bottom: var(--tqb-spacing-md); font-size: var(--tqb-font-md); }
+        .tqb-section-title-spaced { color: var(--tqb-accent-blue); margin-top: var(--tqb-spacing-lg); margin-bottom: var(--tqb-spacing-md); font-size: var(--tqb-font-md); }
+        .tqb-setting-label { color: var(--tqb-text-primary); min-width: 200px; }
+        .tqb-setting-toggle-container { display: flex; align-items: center; gap: var(--tqb-spacing-md); min-width: 200px; }
+        .tqb-setting-text { color: var(--tqb-text-secondary); font-size: var(--tqb-font-sm); }
+        .tqb-toggle-wrapper { display: inline-flex; align-items: center; cursor: pointer; position: relative; width: 40px; height: 20px; }
+        .tqb-toggle-track { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--tqb-bg-tertiary); border-radius: 20px; transition: 0.3s; }
+        .tqb-toggle-thumb { position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
+        .tqb-select-sort { border: none; border-radius: var(--tqb-radius-sm); padding: var(--tqb-spacing-sm); font-size: var(--tqb-font-md); background: var(--tqb-bg-input); color: var(--tqb-text-primary); }
     `;
-  }
 
   // Initialize for current site
   const siteConfig = getCurrentSiteConfig();
@@ -376,29 +363,41 @@
   // Inject site-specific CSS for wider sidebars
   injectSiteCSS(siteConfig);
 
-  /**
-   * Generate HTML for a settings toggle option
-   * @param {string} label - Display label for the setting (e.g., "🎨 Theme")
-   * @param {string} id - ID for the checkbox input
-   * @param {string} leftLabel - Label for unchecked state (e.g., "Dark")
-   * @param {string} rightLabel - Label for checked state (e.g., "Light")
-   * @returns {string} HTML string for the setting row
-   */
+  /** Generate HTML for a settings toggle option */
   function generateSettingToggle(label, id, leftLabel, rightLabel) {
     return `
       <div class="tqb-shortcut-item">
-        <span style="color: var(--tqb-text-primary); min-width: 200px;">${label}</span>
-        <div style="display:flex;align-items:center;gap:var(--tqb-spacing-md); min-width: 200px;">
-          <span style="color:var(--tqb-text-secondary);font-size:var(--tqb-font-sm);">${leftLabel}</span>
-          <label style="display:inline-flex;align-items:center;cursor:pointer;position:relative;width:40px;height:20px;">
+        <span class="tqb-setting-label">${label}</span>
+        <div class="tqb-setting-toggle-container">
+          <span class="tqb-setting-text">${leftLabel}</span>
+          <label class="tqb-toggle-wrapper">
             <input type="checkbox" id="${id}" style="opacity:0;width:0;height:0;">
-            <span style="position:absolute;top:0;left:0;right:0;bottom:0;background-color:var(--tqb-bg-tertiary);border-radius:20px;transition:0.3s;"></span>
-            <span style="position:absolute;height:14px;width:14px;left:3px;bottom:3px;background-color:white;border-radius:50%;transition:0.3s;"></span>
+            <span class="tqb-toggle-track"></span>
+            <span class="tqb-toggle-thumb"></span>
           </label>
-          <span style="color:var(--tqb-text-secondary);font-size:var(--tqb-font-sm);">${rightLabel}</span>
+          <span class="tqb-setting-text">${rightLabel}</span>
         </div>
       </div>
     `;
+  }
+
+  /** Create a modal overlay with standardized structure */
+  function createModal(id, titleId, title, content, maxWidth = '600px') {
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'tqb-modal-overlay';
+    modalOverlay.setAttribute('role', 'dialog');
+    modalOverlay.setAttribute('aria-modal', 'true');
+    modalOverlay.setAttribute('aria-labelledby', titleId);
+    modalOverlay.innerHTML = `
+        <div class="tqb-modal" id="${id}" style="max-width: ${maxWidth};">
+            <div class="tqb-modal-header">
+                <h3 class="tqb-modal-title" id="${titleId}">${title}</h3>
+                <button class="tqb-modal-close" id="${id}-close" aria-label="Close modal">✕</button>
+            </div>
+            ${content}
+        </div>
+    `;
+    return modalOverlay;
   }
 
   waitForElements([siteConfig.containerSelector, siteConfig.inputSelector], (container, inputEl) => {
@@ -413,7 +412,7 @@
     const builder = document.createElement('div');
     builder.className = 'tqb-builder';
     builder.innerHTML = `
-        <style>${generateCSS()}</style>
+        <style>${TQB_STYLES}</style>
 
         <!-- Sync buttons -->
         <div class="tqb-header">
@@ -421,7 +420,7 @@
             <button id="tqb-paste-to" class="tqb-sync-btn" aria-label="Paste tags to page input">📤 Paste to input</button>
             <button id="tqb-save-favorite" class="tqb-sync-btn tqb-save-btn" aria-label="Save current tags as favorite">💾 Save Current</button>
             <button id="tqb-clear-all" class="tqb-clear-btn" aria-label="Clear all tags">🗑️ Clear All</button>
-            <button id="tqb-preferences" class="tqb-sync-btn" aria-label="Open preferences" style="background: var(--tqb-text-tertiary); grid-column: 1 / -1;">⚙️ Preferences</button>
+            <button id="tqb-preferences" class="tqb-sync-btn tqb-btn-gray" aria-label="Open preferences" style="grid-column: 1 / -1;">⚙️ Preferences</button>
         </div>
 
         <!-- Input row -->
@@ -473,58 +472,43 @@
     }
 
     // Create modal overlay and content
-    const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'tqb-modal-overlay';
-    modalOverlay.setAttribute('role', 'dialog');
-    modalOverlay.setAttribute('aria-modal', 'true');
-    modalOverlay.setAttribute('aria-labelledby', 'tqb-modal-title');
-    modalOverlay.innerHTML = `
-        <div class="tqb-modal" id="tqb-favorites-modal">
-            <div class="tqb-modal-header">
-                <h3 class="tqb-modal-title" id="tqb-modal-title">⭐ Saved Favorites</h3>
-                <button class="tqb-modal-close" id="tqb-modal-close" aria-label="Close favorites modal">✕</button>
-            </div>
-            <div style="display:flex;gap:var(--tqb-spacing-sm);margin-bottom:var(--tqb-spacing-md);">
-                <div class="tqb-favorites-search" style="flex:1;margin-bottom:0;">
+    const modalOverlay = createModal(
+      'tqb-favorites-modal',
+      'tqb-modal-title',
+      '⭐ Saved Favorites',
+      `<div class="tqb-flex-row">
+                <div class="tqb-favorites-search tqb-flex-1" style="margin-bottom:0;">
                     <input id="tqb-modal-favorites-filter" placeholder="🔍 Search favorites..." type="text" aria-label="Search favorites">
                 </div>
-                <select id="tqb-favorites-sort" aria-label="Sort favorites" style="border:none;border-radius:var(--tqb-radius-sm);padding:var(--tqb-spacing-sm);font-size:var(--tqb-font-md);background:var(--tqb-bg-input);color:var(--tqb-text-primary);">
+                <select id="tqb-favorites-sort" class="tqb-select-sort" aria-label="Sort favorites">
                     <option value="date-desc">Newest First</option>
                     <option value="date-asc">Oldest First</option>
                     <option value="name-asc">Name (A-Z)</option>
                     <option value="name-desc">Name (Z-A)</option>
                 </select>
             </div>
-            <div style="display:flex;gap:var(--tqb-spacing-sm);margin-bottom:var(--tqb-spacing-md);">
-                <button id="tqb-export-favorites" style="flex:1;background:var(--tqb-accent-blue);color:white;border:none;border-radius:var(--tqb-radius-sm);padding:var(--tqb-spacing-sm);font-size:var(--tqb-font-md);cursor:pointer;">📤 Export</button>
-                <button id="tqb-import-favorites" style="flex:1;background:var(--tqb-accent-amber);color:white;border:none;border-radius:var(--tqb-radius-sm);padding:var(--tqb-spacing-sm);font-size:var(--tqb-font-md);cursor:pointer;">📥 Import</button>
+            <div class="tqb-flex-row">
+                <button id="tqb-export-favorites" class="tqb-btn-blue tqb-flex-1">📤 Export</button>
+                <button id="tqb-import-favorites" class="tqb-btn-amber tqb-flex-1">📥 Import</button>
             </div>
             <div class="tqb-favorites-list" id="tqb-modal-favorites-list" style="max-height:60vh;">
                 <div class="tqb-empty">No favorites saved yet</div>
-            </div>
-        </div>
-    `;
+            </div>`
+    );
     document.body.appendChild(modalOverlay);
 
     // Create help modal
-    const helpModalOverlay = document.createElement('div');
-    helpModalOverlay.className = 'tqb-modal-overlay';
-    helpModalOverlay.setAttribute('role', 'dialog');
-    helpModalOverlay.setAttribute('aria-modal', 'true');
-    helpModalOverlay.setAttribute('aria-labelledby', 'tqb-help-modal-title');
-    helpModalOverlay.innerHTML = `
-        <div class="tqb-modal" id="tqb-help-modal" style="max-width: 500px;">
-            <div class="tqb-modal-header">
-                <h3 class="tqb-modal-title" id="tqb-help-modal-title">⚙️ Preferences</h3>
-                <button class="tqb-modal-close" id="tqb-help-modal-close" aria-label="Close preferences modal">✕</button>
-            </div>
-            <div class="tqb-help-content" style="padding: 1rem;">
-                <h4 style="color: var(--tqb-accent-blue); margin-top: 0; margin-bottom: var(--tqb-spacing-md); font-size: var(--tqb-font-md);">⚙️ Settings</h4>
+    const helpModalOverlay = createModal(
+      'tqb-help-modal',
+      'tqb-help-modal-title',
+      '⚙️ Preferences',
+      `<div class="tqb-help-content" style="padding: 1rem;">
+                <h4 class="tqb-section-title">⚙️ Settings</h4>
                 ${generateSettingToggle('🎨 Theme', 'tqb-theme-toggle', 'Dark', 'Light')}
                 ${generateSettingToggle('📐 Spacing', 'tqb-compact-toggle', 'Regular', 'Compact')}
                 ${generateSettingToggle('🚀 Auto-Submit', 'tqb-auto-submit-toggle', 'Off', 'On')}
                 ${generateSettingToggle('👁️ Show Preview', 'tqb-show-preview-toggle', 'Hidden', 'Visible')}
-                <h4 style="color: var(--tqb-accent-blue); margin-top: var(--tqb-spacing-lg); margin-bottom: var(--tqb-spacing-md); font-size: var(--tqb-font-md);">⌨️ Keyboard Shortcuts</h4>
+                <h4 class="tqb-section-title-spaced">⌨️ Keyboard Shortcuts</h4>
                 <div class="tqb-shortcut-item">
                     <strong>Ctrl + Enter</strong>
                     <span>Paste tags to page search input</span>
@@ -537,43 +521,32 @@
                     <strong>Ctrl + Shift + X</strong>
                     <span>Copy tags from page search input to builder</span>
                 </div>
-            </div>
-        </div>
-    `;
+            </div>`,
+      '500px'
+    );
     helpModalOverlay.style.display = 'none';
     document.body.appendChild(helpModalOverlay);
 
-    const input = builder.querySelector('#tqb-input');
-    const opSelect = builder.querySelector('#tqb-op');
-    const addBtn = builder.querySelector('#tqb-add');
-    const treeArea = builder.querySelector('#tqb-tree');
-    const preview = builder.querySelector('#tqb-preview');
-    const previewSection = builder.querySelector('.tqb-preview-section');
-    const copyFromBtn = builder.querySelector('#tqb-copy-from');
-    const pasteToBtn = builder.querySelector('#tqb-paste-to');
-    const viewFavoritesBtn = builder.querySelector('#tqb-view-favorites');
-    const clearAllBtn = builder.querySelector('#tqb-clear-all');
-    const preferencesBtn = builder.querySelector('#tqb-preferences');
-    const saveFavoriteBtn = builder.querySelector('#tqb-save-favorite');
-    const favoritesFilter = builder.querySelector('#tqb-favorites-filter');
-    const favoritesList = builder.querySelector('#tqb-favorites-list');
+    // Builder elements
+    const [input, opSelect, addBtn, treeArea, preview, previewSection, copyFromBtn, pasteToBtn,
+      viewFavoritesBtn, clearAllBtn, preferencesBtn, saveFavoriteBtn, favoritesFilter, favoritesList
+    ] = ['#tqb-input', '#tqb-op', '#tqb-add', '#tqb-tree', '#tqb-preview', '.tqb-preview-section',
+      '#tqb-copy-from', '#tqb-paste-to', '#tqb-view-favorites', '#tqb-clear-all',
+      '#tqb-preferences', '#tqb-save-favorite', '#tqb-favorites-filter', '#tqb-favorites-list'
+    ]
+    .map(sel => builder.querySelector(sel));
 
     // Modal elements
-    const modalCloseBtn = modalOverlay.querySelector('#tqb-modal-close');
-    const modalFavoritesFilter = modalOverlay.querySelector('#tqb-modal-favorites-filter');
-    const modalFavoritesList = modalOverlay.querySelector('#tqb-modal-favorites-list');
-    const favoritesSort = modalOverlay.querySelector('#tqb-favorites-sort');
-    const exportFavoritesBtn = modalOverlay.querySelector('#tqb-export-favorites');
-    const importFavoritesBtn = modalOverlay.querySelector('#tqb-import-favorites');
+    const [modalCloseBtn, modalFavoritesFilter, modalFavoritesList, favoritesSort,
+      exportFavoritesBtn, importFavoritesBtn
+    ] = ['#tqb-favorites-modal-close', '#tqb-modal-favorites-filter', '#tqb-modal-favorites-list',
+      '#tqb-favorites-sort', '#tqb-export-favorites', '#tqb-import-favorites'
+    ]
+    .map(sel => modalOverlay.querySelector(sel));
 
     let tags = [];
 
-    /**
-     * Debounce function to limit how often a function can be called
-     * @param {Function} func - The function to debounce
-     * @param {number} wait - The delay in milliseconds
-     * @returns {Function} Debounced function
-     */
+    /** Debounce function to limit how often a function can be called */
     function debounce(func, wait) {
       let timeout;
       return function executedFunction(...args) {
@@ -587,258 +560,244 @@
     }
 
     // --- Custom Dialogs ---
-    /**
-     * Show custom alert dialog
-     * @param {string} message - Message to display
-     * @returns {Promise<void>}
-     */
+    /** Create base dialog with customizable content and buttons */
+    function createDialog({
+      content,
+      buttons,
+      onEscape,
+      onOverlayClick
+    }) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'tqb-modal-overlay';
+        overlay.style.display = 'flex';
+
+        const buttonsHtml = buttons.map(btn =>
+          `<button class="tqb-dialog-btn ${btn.className}">${btn.text}</button>`
+        ).join('');
+
+        overlay.innerHTML = `
+          <div class="tqb-dialog">
+            ${content}
+            <div class="tqb-dialog-buttons">${buttonsHtml}</div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const dialog = overlay.querySelector('.tqb-dialog');
+        const buttonElements = dialog.querySelectorAll('.tqb-dialog-btn');
+
+        const close = (result) => {
+          overlay.remove();
+          resolve(result);
+        };
+
+        // Attach button handlers
+        buttons.forEach((btn, i) => {
+          buttonElements[i].addEventListener('click', () => close(btn.onClick()));
+        });
+
+        // Overlay click handler
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) close(onOverlayClick());
+        });
+
+        // Escape key handler
+        document.addEventListener('keydown', function escHandler(e) {
+          if (e.key === 'Escape') {
+            document.removeEventListener('keydown', escHandler);
+            close(onEscape());
+          }
+        });
+      });
+    }
+
+    /** Show custom alert dialog */
     function showAlert(message) {
-      return new Promise((resolve) => {
-        const overlay = document.createElement('div');
-        overlay.className = 'tqb-modal-overlay';
-        overlay.style.display = 'flex';
-        overlay.innerHTML = `
-          <div class="tqb-dialog">
-            <div class="tqb-dialog-message">${escapeHtml(message)}</div>
-            <div class="tqb-dialog-buttons">
-              <button class="tqb-dialog-btn tqb-dialog-btn-primary">OK</button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(overlay);
-
-        const okBtn = overlay.querySelector('.tqb-dialog-btn-primary');
-        const close = () => {
-          overlay.remove();
-          resolve();
-        };
-
-        okBtn.addEventListener('click', close);
-        overlay.addEventListener('click', (e) => {
-          if (e.target === overlay) close();
-        });
-        document.addEventListener('keydown', function escHandler(e) {
-          if (e.key === 'Escape') {
-            document.removeEventListener('keydown', escHandler);
-            close();
-          }
-        });
+      return createDialog({
+        content: `<div class="tqb-dialog-message">${escapeHtml(message)}</div>`,
+        buttons: [{
+          text: 'OK',
+          className: 'tqb-dialog-btn-primary',
+          onClick: () => undefined
+        }],
+        onEscape: () => undefined,
+        onOverlayClick: () => undefined
       });
     }
 
-    /**
-     * Show custom confirm dialog
-     * @param {string} message - Message to display
-     * @returns {Promise<boolean>} True if confirmed, false if cancelled
-     */
+    /** Show custom confirm dialog */
     function showConfirm(message) {
-      return new Promise((resolve) => {
-        const overlay = document.createElement('div');
-        overlay.className = 'tqb-modal-overlay';
-        overlay.style.display = 'flex';
-        overlay.innerHTML = `
-          <div class="tqb-dialog">
-            <div class="tqb-dialog-message">${escapeHtml(message)}</div>
-            <div class="tqb-dialog-buttons">
-              <button class="tqb-dialog-btn tqb-dialog-btn-secondary">Cancel</button>
-              <button class="tqb-dialog-btn tqb-dialog-btn-danger">Confirm</button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(overlay);
-
-        const cancelBtn = overlay.querySelector('.tqb-dialog-btn-secondary');
-        const confirmBtn = overlay.querySelector('.tqb-dialog-btn-danger');
-
-        const close = (result) => {
-          overlay.remove();
-          resolve(result);
-        };
-
-        cancelBtn.addEventListener('click', () => close(false));
-        confirmBtn.addEventListener('click', () => close(true));
-        overlay.addEventListener('click', (e) => {
-          if (e.target === overlay) close(false);
-        });
-        document.addEventListener('keydown', function escHandler(e) {
-          if (e.key === 'Escape') {
-            document.removeEventListener('keydown', escHandler);
-            close(false);
+      return createDialog({
+        content: `<div class="tqb-dialog-message">${escapeHtml(message)}</div>`,
+        buttons: [{
+            text: 'Cancel',
+            className: 'tqb-dialog-btn-secondary',
+            onClick: () => false
+          },
+          {
+            text: 'Confirm',
+            className: 'tqb-dialog-btn-danger',
+            onClick: () => true
           }
-        });
+        ],
+        onEscape: () => false,
+        onOverlayClick: () => false
       });
     }
 
-    /**
-     * Show custom prompt dialog
-     * @param {string} message - Message to display
-     * @param {string} defaultValue - Default input value
-     * @returns {Promise<string|null>} Input value or null if cancelled
-     */
+    /** Show custom prompt dialog */
     function showPrompt(message, defaultValue = '') {
-      return new Promise((resolve) => {
-        const overlay = document.createElement('div');
-        overlay.className = 'tqb-modal-overlay';
-        overlay.style.display = 'flex';
-        overlay.innerHTML = `
-          <div class="tqb-dialog">
-            <div class="tqb-dialog-title">${escapeHtml(message)}</div>
-            <input type="text" class="tqb-dialog-input" value="${escapeHtml(defaultValue)}">
-            <div class="tqb-dialog-buttons">
-              <button class="tqb-dialog-btn tqb-dialog-btn-secondary">Cancel</button>
-              <button class="tqb-dialog-btn tqb-dialog-btn-primary">OK</button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(overlay);
+      let inputValue = null;
 
-        const input = overlay.querySelector('.tqb-dialog-input');
-        const cancelBtn = overlay.querySelector('.tqb-dialog-btn-secondary');
-        const okBtn = overlay.querySelector('.tqb-dialog-btn-primary');
-
-        input.focus();
-        input.select();
-
-        const close = (result) => {
-          overlay.remove();
-          resolve(result);
-        };
-
-        cancelBtn.addEventListener('click', () => close(null));
-        okBtn.addEventListener('click', () => close(input.value));
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') close(input.value);
-          if (e.key === 'Escape') close(null);
-        });
-        overlay.addEventListener('click', (e) => {
-          if (e.target === overlay) close(null);
-        });
+      const dialogPromise = createDialog({
+        content: `
+          <div class="tqb-dialog-title">${escapeHtml(message)}</div>
+          <input type="text" class="tqb-dialog-input" value="${escapeHtml(defaultValue)}">
+        `,
+        buttons: [{
+            text: 'Cancel',
+            className: 'tqb-dialog-btn-secondary',
+            onClick: () => null
+          },
+          {
+            text: 'OK',
+            className: 'tqb-dialog-btn-primary',
+            onClick: () => {
+              const input = document.querySelector('.tqb-dialog-input');
+              inputValue = input ? input.value : null;
+              return 'ok';
+            }
+          }
+        ],
+        onEscape: () => null,
+        onOverlayClick: () => null
       });
+
+      // Set up input after dialog is created
+      setTimeout(() => {
+        const input = document.querySelector('.tqb-dialog-input');
+        if (input) {
+          input.focus();
+          input.select();
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              const okBtn = document.querySelector('.tqb-dialog-btn-primary');
+              if (okBtn) okBtn.click();
+            }
+          });
+        }
+      }, 0);
+
+      return dialogPromise.then(result => result === 'ok' ? inputValue : null);
     }
 
     // --- Storage ---
     const siteStorageKey = getSiteStorageKey(STORAGE_KEY);
     const siteVisibilityKey = getSiteStorageKey(VISIBILITY_KEY);
-    const siteFavoritesKey = getSiteStorageKey('tqb-favorites');
+    const siteFavoritesKey = getSiteStorageKey(FAVORITES_KEY);
     const siteThemeKey = getSiteStorageKey(THEME_KEY);
     const siteCompactKey = getSiteStorageKey(COMPACT_KEY);
     const siteAutoSubmitKey = getSiteStorageKey(AUTO_SUBMIT_KEY);
     const siteShowPreviewKey = getSiteStorageKey(SHOW_PREVIEW_KEY);
 
-    /**
-     * Apply theme by setting data attribute on document
-     * @param {string} theme - 'dark' or 'light'
-     */
-    function applyTheme(theme) {
-      if (theme === 'light') {
-        document.documentElement.setAttribute('data-tqb-theme', 'light');
-      } else {
-        document.documentElement.removeAttribute('data-tqb-theme');
+    /** Settings configuration */
+    const settings = {
+      theme: {
+        key: siteThemeKey,
+        default: 'dark',
+        apply: (value) => {
+          if (value === 'light') {
+            document.documentElement.setAttribute('data-tqb-theme', 'light');
+          } else {
+            document.documentElement.removeAttribute('data-tqb-theme');
+          }
+        }
+      },
+      compact: {
+        key: siteCompactKey,
+        default: false,
+        apply: (value) => {
+          if (value) {
+            document.documentElement.setAttribute('data-tqb-compact', 'true');
+          } else {
+            document.documentElement.removeAttribute('data-tqb-compact');
+          }
+        }
+      },
+      autoSubmit: {
+        key: siteAutoSubmitKey,
+        default: false
+      },
+      showPreview: {
+        key: siteShowPreviewKey,
+        default: false,
+        apply: (value) => {
+          previewSection.style.display = value ? 'block' : 'none';
+        }
+      }
+    };
+
+    /** Load a setting from storage */
+    function loadSetting(settingName) {
+      const config = settings[settingName];
+      const stored = localStorage.getItem(config.key);
+
+      if (stored === null) return config.default;
+
+      // Handle boolean values
+      if (typeof config.default === 'boolean') {
+        return stored === 'true';
+      }
+
+      return stored;
+    }
+
+    /** Save a setting to storage */
+    function saveSetting(settingName, value) {
+      const config = settings[settingName];
+      localStorage.setItem(config.key, value.toString());
+    }
+
+    /** Apply a setting to the UI */
+    function applySetting(settingName, value) {
+      const config = settings[settingName];
+      if (config.apply) {
+        config.apply(value);
       }
     }
 
-    /**
-     * Load theme preference from storage
-     * @returns {string} 'dark' or 'light'
-     */
-    function loadTheme() {
-      const stored = localStorage.getItem(siteThemeKey);
-      return stored || 'dark';
+    /** Show a modal overlay */
+    const showModal = (overlay) => overlay.style.display = 'flex';
+
+    /** Hide a modal overlay */
+    const hideModal = (overlay) => overlay.style.display = 'none';
+
+    /** Setup modal close handlers (close button, overlay click, escape key) */
+    function setupModalHandlers(overlay, closeBtn) {
+      closeBtn.addEventListener('click', () => hideModal(overlay));
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) hideModal(overlay);
+      });
     }
 
-    /**
-     * Save theme preference to storage
-     * @param {string} theme - 'dark' or 'light'
-     */
-    function saveTheme(theme) {
-      localStorage.setItem(siteThemeKey, theme);
+    /** Setup setting toggle handler */
+    function setupSettingToggle(settingName, toggle) {
+      toggle.addEventListener('change', (e) => {
+        const value = settingName === 'theme' ?
+          (e.target.checked ? 'light' : 'dark') :
+          e.target.checked;
+        saveSetting(settingName, value);
+        applySetting(settingName, value);
+      });
     }
 
-    /**
-     * Apply compact mode by setting data attribute on document
-     * @param {boolean} compact - true for compact mode, false for regular
-     */
-    function applyCompact(compact) {
-      if (compact) {
-        document.documentElement.setAttribute('data-tqb-compact', 'true');
-      } else {
-        document.documentElement.removeAttribute('data-tqb-compact');
-      }
-    }
-
-    /**
-     * Load compact mode preference from storage
-     * @returns {boolean} true if compact mode enabled
-     */
-    function loadCompact() {
-      const stored = localStorage.getItem(siteCompactKey);
-      return stored === 'true';
-    }
-
-    /**
-     * Save compact mode preference to storage
-     * @param {boolean} compact - true for compact mode, false for regular
-     */
-    function saveCompact(compact) {
-      localStorage.setItem(siteCompactKey, compact.toString());
-    }
-
-    /**
-     * Load auto-submit preference from storage
-     * @returns {boolean} true if auto-submit enabled
-     */
-    function loadAutoSubmit() {
-      const stored = localStorage.getItem(siteAutoSubmitKey);
-      return stored === 'true';
-    }
-
-    /**
-     * Save auto-submit preference to storage
-     * @param {boolean} autoSubmit - true to submit form after pasting, false otherwise
-     */
-    function saveAutoSubmit(autoSubmit) {
-      localStorage.setItem(siteAutoSubmitKey, autoSubmit.toString());
-    }
-
-    /**
-     * Load show preview preference from storage
-     * @returns {boolean} true if preview should be shown
-     */
-    function loadShowPreview() {
-      const stored = localStorage.getItem(siteShowPreviewKey);
-      return stored === 'true'; // Default to false (hidden)
-    }
-
-    /**
-     * Save show preview preference to storage
-     * @param {boolean} showPreview - true to show preview, false to hide
-     */
-    function saveShowPreview(showPreview) {
-      localStorage.setItem(siteShowPreviewKey, showPreview.toString());
-    }
-
-    /**
-     * Apply preview visibility
-     * @param {boolean} show - true to show preview, false to hide
-     */
-    function applyPreviewVisibility(show) {
-      if (show) {
-        previewSection.style.display = 'block';
-      } else {
-        previewSection.style.display = 'none';
-      }
-    }
-
-    /**
-     * Save current tags to localStorage
-     */
+    /** Save current tags to localStorage */
     function saveStorage() {
       localStorage.setItem(siteStorageKey, JSON.stringify(tags));
     }
 
-    /**
-     * Load tags from localStorage or initialize from page input
-     */
+    /** Load tags from localStorage or initialize from page input */
     function loadStorage() {
       const stored = localStorage.getItem(siteStorageKey);
       if (stored) {
@@ -856,9 +815,7 @@
     // --- Favorites Storage ---
     let favorites = [];
 
-    /**
-     * Load favorites from localStorage
-     */
+    /** Load favorites from localStorage */
     function loadFavorites() {
       const stored = localStorage.getItem(siteFavoritesKey);
       if (stored) {
@@ -871,24 +828,18 @@
       }
     }
 
-    /**
-     * Save favorites to localStorage
-     */
+    /** Save favorites to localStorage */
     function saveFavorites() {
       localStorage.setItem(siteFavoritesKey, JSON.stringify(favorites));
     }
 
-    /**
-     * Add a new favorite to the collection
-     * @param {string} name - Display name for the favorite
-     * @param {Array} tagData - Tag structure to save
-     */
+    /** Add a new favorite to the collection */
     function addFavorite(name, tagData) {
       const favorite = {
         id: Date.now(),
         name: name.trim(),
         tags: JSON.parse(JSON.stringify(tagData)), // Deep clone
-        query: buildQuery(),
+        query: tagData.map(buildQueryItem).join(' ').trim(),
         createdAt: new Date().toISOString()
       };
       favorites.unshift(favorite); // Add to beginning
@@ -896,20 +847,14 @@
       renderAllFavorites();
     }
 
-    /**
-     * Delete a favorite by ID
-     * @param {number} id - Favorite ID to delete
-     */
+    /** Delete a favorite by ID */
     function deleteFavorite(id) {
       favorites = favorites.filter(fav => fav.id !== id);
       saveFavorites();
       renderAllFavorites();
     }
 
-    /**
-     * Edit a favorite's name
-     * @param {number} id - Favorite ID to edit
-     */
+    /** Edit a favorite's name */
     async function editFavorite(id) {
       const favorite = favorites.find(fav => fav.id === id);
       if (!favorite) return;
@@ -922,9 +867,7 @@
       }
     }
 
-    /**
-     * Export favorites to a JSON file
-     */
+    /** Export favorites to a JSON file */
     function exportFavorites() {
       if (favorites.length === 0) {
         showAlert('No favorites to export!');
@@ -946,9 +889,7 @@
       showAlert(`Exported ${favorites.length} favorite(s)! 📤`);
     }
 
-    /**
-     * Import favorites from a JSON file
-     */
+    /** Import favorites from a JSON file */
     async function importFavorites() {
       const input = document.createElement('input');
       input.type = 'file';
@@ -1012,21 +953,69 @@
       input.click();
     }
 
-    /**
-     * Load a favorite's tags into the builder
-     * @param {Object} favorite - Favorite object with tags property
-     */
+    /** Load a favorite's tags into the builder */
     function loadFavorite(favorite) {
       tags = JSON.parse(JSON.stringify(favorite.tags)); // Deep clone
       saveStorage();
       render();
     }
 
-    /**
-     * Render favorites list with optional filtering
-     * @param {HTMLElement} targetList - Container element for favorites
-     * @param {HTMLInputElement} targetFilter - Filter input element
-     */
+    /** Generate HTML for a favorite item */
+    function generateFavoriteItemHTML(fav) {
+      const date = new Date(fav.createdAt).toLocaleDateString();
+      return `
+        <div class="tqb-favorite-item" data-id="${fav.id}" role="button" tabindex="0" aria-label="Load favorite: ${escapeHtml(fav.name)}">
+          <div class="tqb-favorite-info">
+            <div class="tqb-favorite-name">${escapeHtml(fav.name)}</div>
+            <div class="tqb-favorite-query">${escapeHtml(fav.query)}</div>
+            <div class="tqb-favorite-date">Saved ${date}</div>
+          </div>
+          <div class="tqb-favorite-actions">
+            <button class="tqb-favorite-edit" data-id="${fav.id}" aria-label="Edit favorite: ${escapeHtml(fav.name)}">✏️</button>
+            <button class="tqb-favorite-delete" data-id="${fav.id}" aria-label="Delete favorite: ${escapeHtml(fav.name)}">🗑️</button>
+          </div>
+        </div>
+      `;
+    }
+
+    /** Setup event handlers for favorite items in a list */
+    function setupFavoriteHandlers(targetList) {
+      targetList.querySelectorAll('.tqb-favorite-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          if (e.target.classList.contains('tqb-favorite-delete') || e.target.classList.contains('tqb-favorite-edit')) return;
+
+          const id = parseInt(item.dataset.id);
+          const favorite = favorites.find(fav => fav.id === id);
+          if (favorite) {
+            loadFavorite(favorite);
+            showAlert(`Loaded: ${favorite.name} ✅`);
+            if (targetList === modalFavoritesList) {
+              modalOverlay.style.display = 'none';
+            }
+          }
+        });
+      });
+
+      targetList.querySelectorAll('.tqb-favorite-edit').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          editFavorite(parseInt(btn.dataset.id));
+        });
+      });
+
+      targetList.querySelectorAll('.tqb-favorite-delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const id = parseInt(btn.dataset.id);
+          const favorite = favorites.find(fav => fav.id === id);
+          if (favorite && await showConfirm(`Delete favorite "${favorite.name}"?`)) {
+            deleteFavorite(id);
+          }
+        });
+      });
+    }
+
+    /** Render favorites list with optional filtering */
     function renderFavorites(targetList = favoritesList, targetFilter = favoritesFilter) {
       const filterText = targetFilter.value.toLowerCase();
       let filteredFavorites = favorites.filter(fav =>
@@ -1058,65 +1047,11 @@
         return;
       }
 
-      targetList.innerHTML = filteredFavorites.map(fav => {
-        const date = new Date(fav.createdAt).toLocaleDateString();
-        return `
-          <div class="tqb-favorite-item" data-id="${fav.id}" role="button" tabindex="0" aria-label="Load favorite: ${escapeHtml(fav.name)}">
-            <div class="tqb-favorite-info">
-              <div class="tqb-favorite-name">${escapeHtml(fav.name)}</div>
-              <div class="tqb-favorite-query">${escapeHtml(fav.query)}</div>
-              <div class="tqb-favorite-date">Saved ${date}</div>
-            </div>
-            <div class="tqb-favorite-actions">
-              <button class="tqb-favorite-edit" data-id="${fav.id}" aria-label="Edit favorite: ${escapeHtml(fav.name)}">✏️</button>
-              <button class="tqb-favorite-delete" data-id="${fav.id}" aria-label="Delete favorite: ${escapeHtml(fav.name)}">🗑️</button>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      // Add click handlers for loading and deleting favorites
-      targetList.querySelectorAll('.tqb-favorite-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-          // Don't trigger load if clicking action buttons
-          if (e.target.classList.contains('tqb-favorite-delete') || e.target.classList.contains('tqb-favorite-edit')) return;
-
-          const id = parseInt(item.dataset.id);
-          const favorite = favorites.find(fav => fav.id === id);
-          if (favorite) {
-            loadFavorite(favorite);
-            showAlert(`Loaded: ${favorite.name} ✅`);
-            // Close modal if we're in modal view
-            if (targetList === modalFavoritesList) {
-              modalOverlay.style.display = 'none';
-            }
-          }
-        });
-      });
-
-      targetList.querySelectorAll('.tqb-favorite-edit').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const id = parseInt(btn.dataset.id);
-          editFavorite(id);
-        });
-      });
-
-      targetList.querySelectorAll('.tqb-favorite-delete').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          const id = parseInt(btn.dataset.id);
-          const favorite = favorites.find(fav => fav.id === id);
-          if (favorite && await showConfirm(`Delete favorite "${favorite.name}"?`)) {
-            deleteFavorite(id);
-          }
-        });
-      });
+      targetList.innerHTML = filteredFavorites.map(generateFavoriteItemHTML).join('');
+      setupFavoriteHandlers(targetList);
     }
 
-    /**
-     * Render all favorites in both modal and sidebar
-     */
+    /** Render all favorites in both modal and sidebar */
     function renderAllFavorites() {
       renderFavorites(favoritesList, favoritesFilter);
       renderFavorites(modalFavoritesList, modalFavoritesFilter);
@@ -1127,22 +1062,14 @@
       renderFavorites(targetList, targetFilter);
     }, 150);
 
-    /**
-     * Escape HTML special characters to prevent XSS
-     * @param {string} text - Text to escape
-     * @returns {string} Escaped text
-     */
+    /** Escape HTML special characters to prevent XSS */
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
     }
 
-    /**
-     * Build query string for a single tag item (recursive)
-     * @param {Object} item - Tag item object
-     * @returns {string} Query string representation
-     */
+    /** Build query string for a single tag item (recursive) */
     function buildQueryItem(item) {
       if (item.op === 'or') {
         // Ensure items is an array before mapping
@@ -1158,10 +1085,7 @@
       return item.tagValue;
     }
 
-    /**
-     * Build complete query string from all tags
-     * @returns {string} Complete query string
-     */
+    /** Build complete query string from all tags */
     function buildQuery() {
       // Ensure tags is always an array
       if (!Array.isArray(tags)) {
@@ -1172,9 +1096,7 @@
       return tags.map(buildQueryItem).join(' ').trim();
     }
 
-    /**
-     * Render the tag tree and preview
-     */
+    /** Render the tag tree and preview */
     function render() {
       // Update preview
       const query = buildQuery();
@@ -1198,12 +1120,7 @@
       addDragHandlers();
     }
 
-    /**
-     * Render a single tree item (tag or OR group)
-     * @param {Object} item - Tag item to render
-     * @param {number[]} path - Array index path to this item
-     * @returns {HTMLElement} Rendered tree item element
-     */
+    /** Render a single tree item (tag or OR group) */
     function renderTreeItem(item, path) {
       const div = document.createElement('div');
       div.className = 'tqb-tree-item';
@@ -1310,11 +1227,7 @@
       return div;
     }
 
-    /**
-     * Move an item up or down within its parent array
-     * @param {number[]} path - Path to the item
-     * @param {number} direction - -1 for up, 1 for down
-     */
+    /** Move an item up or down within its parent array */
     function moveItem(path, direction) {
       if (path.length < 1) return; // Need at least one index
 
@@ -1346,9 +1259,7 @@
       render();
     }
 
-    /**
-     * Add drag and drop event handlers to tree items
-     */
+    /** Add drag and drop event handlers to tree items */
     function addDragHandlers() {
       let draggedElement = null;
       let draggedPath = null;
@@ -1361,8 +1272,8 @@
         return element;
       }
 
-      // Add event listeners to all draggable items
-      document.querySelectorAll('.tqb-tag-item[draggable="true"]').forEach(item => {
+      /** Setup all drag event handlers for a single draggable item */
+      function setupItemDragHandlers(item) {
         item.addEventListener('dragstart', (e) => {
           const draggableEl = findDraggableElement(e.target);
           if (!draggableEl || !draggableEl.dataset.path) return;
@@ -1371,23 +1282,17 @@
           draggedPath = draggableEl.dataset.path.split(',');
           draggableEl.classList.add('tqb-dragging');
 
-          // Set drag data
           e.dataTransfer.effectAllowed = 'move';
           e.dataTransfer.setData('text/plain', draggableEl.dataset.path);
         });
 
         item.addEventListener('dragend', (e) => {
           const draggableEl = findDraggableElement(e.target);
-          if (draggableEl) {
-            draggableEl.classList.remove('tqb-dragging');
-          }
+          if (draggableEl) draggableEl.classList.remove('tqb-dragging');
+
           draggedElement = null;
           draggedPath = null;
-
-          // Remove all drag-over classes
-          document.querySelectorAll('.tqb-drag-over').forEach(el => {
-            el.classList.remove('tqb-drag-over');
-          });
+          document.querySelectorAll('.tqb-drag-over').forEach(el => el.classList.remove('tqb-drag-over'));
         });
 
         item.addEventListener('dragover', (e) => {
@@ -1402,33 +1307,25 @@
 
         item.addEventListener('dragleave', (e) => {
           const draggableEl = findDraggableElement(e.target);
-          if (draggableEl) {
-            draggableEl.classList.remove('tqb-drag-over');
-          }
+          if (draggableEl) draggableEl.classList.remove('tqb-drag-over');
         });
 
         item.addEventListener('drop', (e) => {
           e.preventDefault();
           const draggableEl = findDraggableElement(e.target);
-          if (draggableEl) {
-            draggableEl.classList.remove('tqb-drag-over');
-          }
+          if (draggableEl) draggableEl.classList.remove('tqb-drag-over');
 
           if (!draggedPath || !draggableEl || !draggableEl.dataset.path || draggableEl === draggedElement) return;
 
-          const targetPath = draggableEl.dataset.path.split(',');
-
-          // Perform the reorder by moving the dragged item to target position
-          reorderItems(draggedPath, targetPath);
+          reorderItems(draggedPath, draggableEl.dataset.path.split(','));
         });
-      });
+      }
+
+      // Add event listeners to all draggable items
+      document.querySelectorAll('.tqb-tag-item[draggable="true"]').forEach(setupItemDragHandlers);
     }
 
-    /**
-     * Reorder items by moving source to target position
-     * @param {string[]} sourcePath - Path of item being moved
-     * @param {string[]} targetPath - Path of drop target
-     */
+    /** Reorder items by moving source to target position */
     function reorderItems(sourcePath, targetPath) {
       // Convert paths to numbers
       const sourceIndices = sourcePath.map(p => parseInt(p));
@@ -1463,10 +1360,7 @@
       }
     }
 
-    /**
-     * Delete tag item at specified path
-     * @param {number[]} path - Path to the item to delete
-     */
+    /** Delete tag item at specified path */
     function deleteItemAtPath(path) {
       if (path.length === 1) {
         // Top-level item
@@ -1486,12 +1380,7 @@
       }
     }
 
-    /**
-     * Check if a tag already exists at the top level (same level check only)
-     * @param {string} tagValue - The tag value to check
-     * @param {string} op - The operation type (and, not, fuzzy, wildcard)
-     * @returns {boolean} True if duplicate found at top level
-     */
+    /** Check if a tag already exists at the top level (same level check only) */
     function isDuplicateTag(tagValue, op) {
       // Only check top-level tags, not nested OR groups
       return tags.some(item => {
@@ -1580,7 +1469,7 @@
         }));
 
         // Auto-submit if enabled
-        if (loadAutoSubmit()) {
+        if (loadSetting('autoSubmit')) {
           const form = inputEl.closest('form');
           if (form) {
             form.submit();
@@ -1620,98 +1509,41 @@
 
     // --- View Favorites Modal ---
     viewFavoritesBtn.addEventListener('click', () => {
-      modalOverlay.style.display = 'flex';
+      showModal(modalOverlay);
       modalFavoritesFilter.value = ''; // Reset filter
       renderFavorites(modalFavoritesList, modalFavoritesFilter);
     });
 
-    // --- Modal Close ---
-    modalCloseBtn.addEventListener('click', () => {
-      modalOverlay.style.display = 'none';
-    });
-
-    // Close modal when clicking overlay (not the modal content)
-    modalOverlay.addEventListener('click', (e) => {
-      if (e.target === modalOverlay) {
-        modalOverlay.style.display = 'none';
-      }
-    });
-
-    // Close modal when pressing Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modalOverlay.style.display === 'flex') {
-        modalOverlay.style.display = 'none';
-      }
-      if (e.key === 'Escape' && helpModalOverlay.style.display === 'flex') {
-        helpModalOverlay.style.display = 'none';
-      }
-    });
+    // Setup modal close handlers
+    setupModalHandlers(modalOverlay, modalCloseBtn);
 
     // --- Help Modal ---
     preferencesBtn.addEventListener('click', () => {
-      helpModalOverlay.style.display = 'flex';
-      // Update theme toggle state
-      const themeToggle = helpModalOverlay.querySelector('#tqb-theme-toggle');
-      const currentTheme = loadTheme();
-      themeToggle.checked = currentTheme === 'light';
-      // Update compact toggle state
-      const compactToggle = helpModalOverlay.querySelector('#tqb-compact-toggle');
-      const currentCompact = loadCompact();
-      compactToggle.checked = currentCompact;
-      // Update auto-submit toggle state
-      const autoSubmitToggle = helpModalOverlay.querySelector('#tqb-auto-submit-toggle');
-      const currentAutoSubmit = loadAutoSubmit();
-      autoSubmitToggle.checked = currentAutoSubmit;
-      // Update show preview toggle state
-      const showPreviewToggle = helpModalOverlay.querySelector('#tqb-show-preview-toggle');
-      const currentShowPreview = loadShowPreview();
-      showPreviewToggle.checked = currentShowPreview;
+      showModal(helpModalOverlay);
+      // Update toggle states
+      helpModalOverlay.querySelector('#tqb-theme-toggle').checked = loadSetting('theme') === 'light';
+      helpModalOverlay.querySelector('#tqb-compact-toggle').checked = loadSetting('compact');
+      helpModalOverlay.querySelector('#tqb-auto-submit-toggle').checked = loadSetting('autoSubmit');
+      helpModalOverlay.querySelector('#tqb-show-preview-toggle').checked = loadSetting('showPreview');
     });
 
-    const helpModalClose = helpModalOverlay.querySelector('#tqb-help-modal-close');
-    helpModalClose.addEventListener('click', () => {
-      helpModalOverlay.style.display = 'none';
-    });
+    setupModalHandlers(helpModalOverlay, helpModalOverlay.querySelector('#tqb-help-modal-close'));
 
-    helpModalOverlay.addEventListener('click', (e) => {
-      if (e.target === helpModalOverlay) {
-        helpModalOverlay.style.display = 'none';
-      }
-    });
-
-    // --- Theme Toggle ---
-    const themeToggle = helpModalOverlay.querySelector('#tqb-theme-toggle');
-    themeToggle.addEventListener('change', (e) => {
-      const theme = e.target.checked ? 'light' : 'dark';
-      saveTheme(theme);
-      applyTheme(theme);
-    });
-
-    // --- Compact Mode Toggle ---
-    const compactToggle = helpModalOverlay.querySelector('#tqb-compact-toggle');
-    compactToggle.addEventListener('change', (e) => {
-      const compact = e.target.checked;
-      saveCompact(compact);
-      applyCompact(compact);
-    });
-
-    // --- Auto-Submit Toggle ---
-    const autoSubmitToggle = helpModalOverlay.querySelector('#tqb-auto-submit-toggle');
-    autoSubmitToggle.addEventListener('change', (e) => {
-      const autoSubmit = e.target.checked;
-      saveAutoSubmit(autoSubmit);
-    });
-
-    // --- Show Preview Toggle ---
-    const showPreviewToggle = helpModalOverlay.querySelector('#tqb-show-preview-toggle');
-    showPreviewToggle.addEventListener('change', (e) => {
-      const showPreview = e.target.checked;
-      saveShowPreview(showPreview);
-      applyPreviewVisibility(showPreview);
-    });
+    // Setup setting toggles
+    setupSettingToggle('theme', helpModalOverlay.querySelector('#tqb-theme-toggle'));
+    setupSettingToggle('compact', helpModalOverlay.querySelector('#tqb-compact-toggle'));
+    setupSettingToggle('autoSubmit', helpModalOverlay.querySelector('#tqb-auto-submit-toggle'));
+    setupSettingToggle('showPreview', helpModalOverlay.querySelector('#tqb-show-preview-toggle'));
 
     // --- Keyboard Shortcuts ---
     document.addEventListener('keydown', (e) => {
+      // Escape - Close modals
+      if (e.key === 'Escape') {
+        if (modalOverlay.style.display === 'flex') hideModal(modalOverlay);
+        if (helpModalOverlay.style.display === 'flex') hideModal(helpModalOverlay);
+        return;
+      }
+
       // Ctrl+Enter - Paste tags to page input
       if (e.ctrlKey && e.key === 'Enter') {
         e.preventDefault();
@@ -1735,34 +1567,17 @@
     });
 
     // --- Favorites Filters ---
-    favoritesFilter.addEventListener('input', () => {
-      debouncedRenderFavorites(favoritesList, favoritesFilter);
-    });
-
-    modalFavoritesFilter.addEventListener('input', () => {
-      debouncedRenderFavorites(modalFavoritesList, modalFavoritesFilter);
-    });
+    favoritesFilter.addEventListener('input', () => debouncedRenderFavorites(favoritesList, favoritesFilter));
+    modalFavoritesFilter.addEventListener('input', () => debouncedRenderFavorites(modalFavoritesList, modalFavoritesFilter));
 
     // --- Favorites Sort ---
-    favoritesSort.addEventListener('change', () => {
-      renderFavorites(modalFavoritesList, modalFavoritesFilter);
-    });
+    favoritesSort.addEventListener('change', () => renderFavorites(modalFavoritesList, modalFavoritesFilter));
 
-    // --- Export Favorites ---
-    exportFavoritesBtn.addEventListener('click', () => {
-      exportFavorites();
-    });
+    // --- Export/Import Favorites ---
+    exportFavoritesBtn.addEventListener('click', exportFavorites);
+    importFavoritesBtn.addEventListener('click', importFavorites);
 
-    // --- Import Favorites ---
-    importFavoritesBtn.addEventListener('click', () => {
-      importFavorites();
-    });
-
-    /**
-     * Parse query string into tag tree structure
-     * @param {string} queryString - Query string to parse
-     * @returns {Array} Array of tag objects
-     */
+    /** Parse query string into tag tree structure */
     function parseQuery(queryString) {
       const result = [];
       let pos = 0;
@@ -1926,9 +1741,7 @@
       return result;
     }
 
-    /**
-     * Initialize tags from page search input
-     */
+    /** Initialize tags from page search input */
     function initFromInput() {
       const val = inputEl.value.trim();
       if (val) {
@@ -1949,17 +1762,8 @@
     // Load saved state or initialize from page input
     loadStorage();
 
-    // Load and apply theme
-    const initialTheme = loadTheme();
-    applyTheme(initialTheme);
-
-    // Load and apply compact mode
-    const initialCompact = loadCompact();
-    applyCompact(initialCompact);
-
-    // Load and apply preview visibility
-    const initialShowPreview = loadShowPreview();
-    applyPreviewVisibility(initialShowPreview);
+    // Load and apply settings
+    ['theme', 'compact', 'showPreview'].forEach(setting => applySetting(setting, loadSetting(setting)));
 
     // Load and render favorites
     loadFavorites();
@@ -2007,29 +1811,20 @@
       });
     }
 
-    /**
-     * Load builder visibility state from localStorage
-     * @returns {boolean} Visibility state (default: true)
-     */
+    /** Load builder visibility state from localStorage */
     function loadVisibilityState() {
       const saved = localStorage.getItem(siteVisibilityKey);
       return saved !== null ? JSON.parse(saved) : true; // Default to visible
     }
 
-    /**
-     * Save builder visibility state to localStorage
-     * @param {boolean} visible - Visibility state
-     */
+    /** Save builder visibility state to localStorage */
     function saveVisibilityState(visible) {
       localStorage.setItem(siteVisibilityKey, JSON.stringify(visible));
     }
 
     let builderVisible = loadVisibilityState();
 
-    /**
-     * Set builder visibility and update UI
-     * @param {boolean} visible - Whether builder should be visible
-     */
+    /** Set builder visibility and update UI */
     function setBuilderVisible(visible) {
       builderVisible = visible;
       saveVisibilityState(visible);
