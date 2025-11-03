@@ -463,6 +463,10 @@
                     <option value="name-desc">Name (Z-A)</option>
                 </select>
             </div>
+            <div style="display:flex;gap:var(--tqb-spacing-sm);margin-bottom:var(--tqb-spacing-md);">
+                <button id="tqb-export-favorites" style="flex:1;background:var(--tqb-accent-blue);color:white;border:none;border-radius:var(--tqb-radius-sm);padding:var(--tqb-spacing-sm);font-size:var(--tqb-font-md);cursor:pointer;">📤 Export</button>
+                <button id="tqb-import-favorites" style="flex:1;background:var(--tqb-accent-amber);color:white;border:none;border-radius:var(--tqb-radius-sm);padding:var(--tqb-spacing-sm);font-size:var(--tqb-font-md);cursor:pointer;">📥 Import</button>
+            </div>
             <div class="tqb-favorites-list" id="tqb-modal-favorites-list" style="max-height:60vh;">
                 <div class="tqb-empty">No favorites saved yet</div>
             </div>
@@ -551,6 +555,8 @@
     const modalFavoritesFilter = modalOverlay.querySelector('#tqb-modal-favorites-filter');
     const modalFavoritesList = modalOverlay.querySelector('#tqb-modal-favorites-list');
     const favoritesSort = modalOverlay.querySelector('#tqb-favorites-sort');
+    const exportFavoritesBtn = modalOverlay.querySelector('#tqb-export-favorites');
+    const importFavoritesBtn = modalOverlay.querySelector('#tqb-import-favorites');
 
     let tags = [];
 
@@ -876,6 +882,96 @@
         saveFavorites();
         renderAllFavorites();
       }
+    }
+
+    /**
+     * Export favorites to a JSON file
+     */
+    function exportFavorites() {
+      if (favorites.length === 0) {
+        showAlert('No favorites to export!');
+        return;
+      }
+
+      const dataStr = JSON.stringify(favorites, null, 2);
+      const blob = new Blob([dataStr], {
+        type: 'application/json'
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `booru-favorites-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showAlert(`Exported ${favorites.length} favorite(s)! 📤`);
+    }
+
+    /**
+     * Import favorites from a JSON file
+     */
+    async function importFavorites() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+          const text = await file.text();
+          const imported = JSON.parse(text);
+
+          if (!Array.isArray(imported)) {
+            showAlert('Invalid file format: Expected an array of favorites');
+            return;
+          }
+
+          // Validate structure
+          const valid = imported.every(fav =>
+            fav.hasOwnProperty('id') &&
+            fav.hasOwnProperty('name') &&
+            fav.hasOwnProperty('tags') &&
+            Array.isArray(fav.tags)
+          );
+
+          if (!valid) {
+            showAlert('Invalid file format: Missing required fields');
+            return;
+          }
+
+          // Ask user how to handle import
+          const merge = await showConfirm(
+            `Import ${imported.length} favorite(s)?\n\n` +
+            `OK = Merge with existing\n` +
+            `Cancel = Replace all favorites`
+          );
+
+          if (merge) {
+            // Merge: Add imported favorites, renumber IDs to avoid conflicts
+            const maxId = favorites.length > 0 ? Math.max(...favorites.map(f => f.id)) : 0;
+            const renumbered = imported.map((fav, idx) => ({
+              ...fav,
+              id: maxId + idx + 1
+            }));
+            favorites = [...favorites, ...renumbered];
+          } else {
+            // Replace all
+            favorites = imported;
+          }
+
+          saveFavorites();
+          renderAllFavorites();
+          showAlert(`Imported ${imported.length} favorite(s)! 📥`);
+        } catch (err) {
+          console.error('Import error:', err);
+          showAlert('Error importing file: ' + err.message);
+        }
+      };
+
+      input.click();
     }
 
     /**
@@ -1600,6 +1696,16 @@
     // --- Favorites Sort ---
     favoritesSort.addEventListener('change', () => {
       renderFavorites(modalFavoritesList, modalFavoritesFilter);
+    });
+
+    // --- Export Favorites ---
+    exportFavoritesBtn.addEventListener('click', () => {
+      exportFavorites();
+    });
+
+    // --- Import Favorites ---
+    importFavoritesBtn.addEventListener('click', () => {
+      importFavorites();
     });
 
     /**
