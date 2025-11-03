@@ -874,6 +874,22 @@
       }
     }
 
+    /**
+     * Check if a tag already exists at the top level (same level check only)
+     * @param {string} tagValue - The tag value to check
+     * @param {string} op - The operation type (and, not, fuzzy, wildcard)
+     * @returns {boolean} True if duplicate found at top level
+     */
+    function isDuplicateTag(tagValue, op) {
+      // Only check top-level tags, not nested OR groups
+      return tags.some(item => {
+        // Skip OR groups - we don't check inside them
+        if (item.op === 'or') return false;
+        // Check if this top-level tag matches
+        return item.tagValue === tagValue && item.op === op;
+      });
+    }
+
     // --- Add tag ---
     addBtn.addEventListener('click', () => {
       const val = input.value.trim();
@@ -887,6 +903,15 @@
           tagValue: x
         }));
 
+        // Check for duplicates in the OR group
+        const duplicates = items.filter(item => isDuplicateTag(item.tagValue, item.op));
+        if (duplicates.length > 0) {
+          const dupNames = duplicates.map(d => d.tagValue).join(', ');
+          if (!confirm(`Duplicate tag(s) found: ${dupNames}\n\nAdd anyway?`)) {
+            return;
+          }
+        }
+
         if (items.length > 0) {
           tags.push({
             op: 'or',
@@ -894,6 +919,13 @@
           });
         }
       } else {
+        // Check for duplicate single tag
+        if (isDuplicateTag(val, op)) {
+          if (!confirm(`Tag "${val}" with operation "${op.toUpperCase()}" already exists.\n\nAdd duplicate anyway?`)) {
+            return;
+          }
+        }
+
         // Add single tag
         tags.push({
           op,
