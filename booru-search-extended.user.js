@@ -1500,7 +1500,10 @@
         return;
       }
 
-      const name = await showPrompt('Enter a name for this favorite search:');
+      // Generate default name from first 1-2 non-OR tags
+      const nonOrTags = tags.filter(t => t.op !== 'or').slice(0, 2);
+      const defaultName = nonOrTags.map(t => t.tagValue).join(' ') || 'My Search';
+      const name = await showPrompt('Enter a name for this favorite search:', defaultName);
       if (name && name.trim()) {
         addFavorite(name.trim(), tags);
         showAlert('Favorite saved! 💾');
