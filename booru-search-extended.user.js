@@ -163,31 +163,12 @@
     });
   };
 
-  // Initialize for current site
-  const siteConfig = getCurrentSiteConfig();
-  if (!siteConfig) {
-    console.log('Tag Builder: Site not supported, exiting');
-    return;
-  }
-
-  console.log(`Tag Builder: Initializing for ${siteConfig.name}`);
-
-  // Inject site-specific CSS for wider sidebars
-  injectSiteCSS(siteConfig);
-
-  waitForElements([siteConfig.containerSelector, siteConfig.inputSelector], (container, inputEl) => {
-    console.log(`Tag Builder: Found container and input elements`);
-
-    // Toggle button (inline above builder)
-    const toggleBtn = document.createElement('button');
-    toggleBtn.className = 'tqb-toggle-btn';
-    toggleBtn.textContent = `🟥 Hide ${siteConfig.name} Tag Builder`;
-
-    // Builder panel
-    const builder = document.createElement('div');
-    builder.className = 'tqb-builder';
-    builder.innerHTML = `
-        <style>
+  /**
+   * Generate CSS styles for the tag builder
+   * @returns {string} CSS stylesheet content
+   */
+  function generateCSS() {
+    return `
         :root {
           --tqb-bg-primary: #1e293b;
           --tqb-bg-secondary: #0f172a;
@@ -290,7 +271,34 @@
         .tqb-modal-title { font-size: var(--tqb-font-lg); font-weight: 600; color: var(--tqb-accent-amber); margin: 0; background: transparent; }
         .tqb-modal-close { background: var(--tqb-text-tertiary); color: white; border: none; border-radius: var(--tqb-radius-sm); padding: var(--tqb-spacing-sm); cursor: pointer; font-size: var(--tqb-font-lg); width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; }
         .tqb-modal-close:hover { background: var(--tqb-bg-hover); }
-        </style>
+    `;
+  }
+
+  // Initialize for current site
+  const siteConfig = getCurrentSiteConfig();
+  if (!siteConfig) {
+    console.log('Tag Builder: Site not supported, exiting');
+    return;
+  }
+
+  console.log(`Tag Builder: Initializing for ${siteConfig.name}`);
+
+  // Inject site-specific CSS for wider sidebars
+  injectSiteCSS(siteConfig);
+
+  waitForElements([siteConfig.containerSelector, siteConfig.inputSelector], (container, inputEl) => {
+    console.log(`Tag Builder: Found container and input elements`);
+
+    // Toggle button (inline above builder)
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'tqb-toggle-btn';
+    toggleBtn.textContent = `🟥 Hide ${siteConfig.name} Tag Builder`;
+
+    // Builder panel
+    const builder = document.createElement('div');
+    builder.className = 'tqb-builder';
+    builder.innerHTML = `
+        <style>${generateCSS()}</style>
 
         <!-- Sync buttons -->
         <div class="tqb-header">
