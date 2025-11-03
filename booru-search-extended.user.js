@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Booru Search Extended
-// @version      1.3
+// @version      1.4
 // @description  Advanced tag builder with tree-based UI and robust parsing - works on multiple booru sites
 // @author       ferret-terref
 // @homepageURL  https://github.com/ferret-terref/booru-search-extended
@@ -22,6 +22,7 @@
   'use strict';
   const STORAGE_KEY = 'tqb-tags';
   const VISIBILITY_KEY = 'tqb-visibility';
+  const THEME_KEY = 'tqb-theme';
 
   // Site configuration for different booru sites
   const SITE_CONFIGS = {
@@ -198,6 +199,19 @@
           --tqb-spacing-md: .5rem;
           --tqb-spacing-lg: 1rem;
         }
+        /* Light theme */
+        [data-tqb-theme="light"] {
+          --tqb-bg-primary: #ffffff;
+          --tqb-bg-secondary: #f3f4f6;
+          --tqb-bg-tertiary: #e5e7eb;
+          --tqb-bg-input: #ffffff;
+          --tqb-bg-hover: #d1d5db;
+          --tqb-text-primary: #111827;
+          --tqb-text-secondary: #6b7280;
+          --tqb-text-tertiary: #9ca3af;
+          --tqb-border-color: #d1d5db;
+          --tqb-border-color-alt: #9ca3af;
+        }
         /* Global */
         button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--tqb-accent-blue); outline-offset: 2px; }
         .tqb-favorites-list::-webkit-scrollbar, .tqb-modal::-webkit-scrollbar { width: 8px; }
@@ -264,6 +278,13 @@
         .tqb-favorite-actions { display: flex; gap: var(--tqb-spacing-sm); background: transparent; }
         .tqb-favorite-delete { background: var(--tqb-accent-red); color: white; border: none; border-radius: var(--tqb-spacing-sm); padding: var(--tqb-spacing-sm) var(--tqb-spacing-sm); font-size: var(--tqb-font-sm); cursor: pointer; }
         .tqb-favorite-delete:hover { background: var(--tqb-accent-red-hover); }
+        /* Toggle switch checked state */
+        #tqb-theme-toggle:checked + span {
+          background-color: var(--tqb-accent-blue);
+        }
+        #tqb-theme-toggle:checked + span + span {
+          transform: translateX(20px);
+        }
         /* Modal */
         .tqb-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; display: none; justify-content: center; align-items: center; }
         .tqb-modal { background: var(--tqb-bg-primary); color: var(--tqb-text-primary); border-radius: var(--tqb-radius-lg); padding: var(--tqb-spacing-lg); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; }
@@ -396,6 +417,16 @@
                 <button class="tqb-modal-close" id="tqb-help-modal-close" aria-label="Close preferences modal">✕</button>
             </div>
             <div class="tqb-help-content" style="padding: 1rem;">
+                <h4 style="color: var(--tqb-accent-blue); margin-top: 0; margin-bottom: var(--tqb-spacing-md); font-size: var(--tqb-font-md);">🎨 Theme</h4>
+                <div style="display:flex;align-items:center;gap:var(--tqb-spacing-md);margin-bottom:var(--tqb-spacing-lg);">
+                    <span style="color:var(--tqb-text-secondary);font-size:var(--tqb-font-md);">Dark</span>
+                    <label style="display:inline-flex;align-items:center;cursor:pointer;position:relative;width:40px;height:20px;">
+                        <input type="checkbox" id="tqb-theme-toggle" style="opacity:0;width:0;height:0;">
+                        <span style="position:absolute;top:0;left:0;right:0;bottom:0;background-color:var(--tqb-bg-tertiary);border-radius:20px;transition:0.3s;"></span>
+                        <span style="position:absolute;height:14px;width:14px;left:3px;bottom:3px;background-color:white;border-radius:50%;transition:0.3s;"></span>
+                    </label>
+                    <span style="color:var(--tqb-text-secondary);font-size:var(--tqb-font-md);">Light</span>
+                </div>
                 <h4 style="color: var(--tqb-accent-blue); margin-top: 0; margin-bottom: var(--tqb-spacing-md); font-size: var(--tqb-font-md);">⌨️ Keyboard Shortcuts</h4>
                 <div class="tqb-shortcut-item">
                     <strong>Ctrl + Enter</strong>
@@ -458,6 +489,36 @@
     const siteStorageKey = getSiteStorageKey(STORAGE_KEY);
     const siteVisibilityKey = getSiteStorageKey(VISIBILITY_KEY);
     const siteFavoritesKey = getSiteStorageKey('tqb-favorites');
+    const siteThemeKey = getSiteStorageKey(THEME_KEY);
+
+    /**
+     * Apply theme by setting data attribute on document
+     * @param {string} theme - 'dark' or 'light'
+     */
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-tqb-theme', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-tqb-theme');
+      }
+    }
+
+    /**
+     * Load theme preference from storage
+     * @returns {string} 'dark' or 'light'
+     */
+    function loadTheme() {
+      const stored = localStorage.getItem(siteThemeKey);
+      return stored || 'dark';
+    }
+
+    /**
+     * Save theme preference to storage
+     * @param {string} theme - 'dark' or 'light'
+     */
+    function saveTheme(theme) {
+      localStorage.setItem(siteThemeKey, theme);
+    }
 
     function saveStorage() {
       localStorage.setItem(siteStorageKey, JSON.stringify(tags));
@@ -1091,6 +1152,10 @@
     // --- Help Modal ---
     preferencesBtn.addEventListener('click', () => {
       helpModalOverlay.style.display = 'flex';
+      // Update theme toggle state
+      const themeToggle = helpModalOverlay.querySelector('#tqb-theme-toggle');
+      const currentTheme = loadTheme();
+      themeToggle.checked = currentTheme === 'light';
     });
 
     const helpModalClose = helpModalOverlay.querySelector('#tqb-help-modal-close');
@@ -1102,6 +1167,14 @@
       if (e.target === helpModalOverlay) {
         helpModalOverlay.style.display = 'none';
       }
+    });
+
+    // --- Theme Toggle ---
+    const themeToggle = helpModalOverlay.querySelector('#tqb-theme-toggle');
+    themeToggle.addEventListener('change', (e) => {
+      const theme = e.target.checked ? 'light' : 'dark';
+      saveTheme(theme);
+      applyTheme(theme);
     });
 
     // --- Keyboard Shortcuts ---
@@ -1321,6 +1394,10 @@
 
     // Load saved state or initialize from page input
     loadStorage();
+
+    // Load and apply theme
+    const initialTheme = loadTheme();
+    applyTheme(initialTheme);
 
     // Load and render favorites
     loadFavorites();
