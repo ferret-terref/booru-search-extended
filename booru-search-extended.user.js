@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Booru Search Extended
-// @version      1.0
+// @version      1.1
 // @description  Advanced tag builder with tree-based UI and robust parsing - works on multiple booru sites
 // @author       ferret-terref
 // @homepageURL  https://github.com/ferret-terref/booru-search-extended
@@ -180,28 +180,16 @@
 
     // Toggle button (inline above builder)
     const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'tqb-toggle-btn';
     toggleBtn.textContent = `🟥 Hide ${siteConfig.name} Tag Builder`;
-    toggleBtn.style.background = '#1e293b';
-    toggleBtn.style.color = '#f8fafc';
-    toggleBtn.style.border = 'none';
-    toggleBtn.style.borderRadius = '6px';
-    toggleBtn.style.padding = '8px 14px';
-    toggleBtn.style.fontSize = '1rem';
-    toggleBtn.style.cursor = 'pointer';
-    toggleBtn.style.boxShadow = '0 2px 8px #0003';
-    toggleBtn.style.marginBottom = '8px';
-    toggleBtn.style.display = 'block';
-    toggleBtn.style.width = '100%';
 
     // Builder panel
     const builder = document.createElement('div');
     builder.className = 'tqb-builder';
-    builder.style.transition = 'opacity 0.2s, visibility 0.2s';
-    builder.style.opacity = '1';
-    builder.style.visibility = 'visible';
     builder.innerHTML = `
         <style>
-        .tqb-builder { background:#1e293b;color:#f8fafc;padding:1rem;border-radius:.6rem;font-family:system-ui;font-size:.9rem;margin-bottom:1rem; }
+        .tqb-toggle-btn { background:#1e293b;color:#f8fafc;border:none;border-radius:6px;padding:8px 14px;font-size:1rem;cursor:pointer;box-shadow:0 2px 8px #0003;margin-bottom:8px;display:block;width:100%; }
+        .tqb-builder { background:#1e293b;color:#f8fafc;padding:1rem;border-radius:.6rem;font-family:system-ui;font-size:.9rem;margin-bottom:1rem;transition:opacity 0.2s, visibility 0.2s;opacity:1;visibility:visible; }
         .tqb-builder.tqb-hidden { opacity:0; visibility:hidden; pointer-events:none; }
         .tqb-header { display:grid; grid-template-columns: 1fr 1fr; gap:.5rem; margin-bottom:.8rem; background:#0f172a; padding:.8rem; border-radius:.4rem; }
         .tqb-header button { width: 100%;}
@@ -261,7 +249,7 @@
         <div class="tqb-header">
             <button id="tqb-copy-from" class="tqb-sync-btn">📋 Copy from input</button>
             <button id="tqb-paste-to" class="tqb-sync-btn">📤 Paste to input</button>
-            <button id="tqb-view-favorites" class="tqb-view-favorites-btn">⭐ View Favorites</button>
+            <button id="tqb-save-favorite" class="tqb-sync-btn">💾 Save Current</button>
             <button id="tqb-clear-all" class="tqb-clear-btn">🗑️ Clear All</button>
         </div>
 
@@ -287,7 +275,7 @@
         <div class="tqb-favorites-section">
             <div class="tqb-favorites-header">
                 <h4>⭐ Favorites</h4>
-                <button id="tqb-save-favorite" class="tqb-sync-btn">💾 Save Current</button>
+                <button id="tqb-view-favorites" class="tqb-view-favorites-btn">⭐ View Favorites</button>
             </div>
             <div class="tqb-favorites-search">
                 <input id="tqb-favorites-filter" placeholder="🔍 Search favorites..." type="text">
@@ -937,6 +925,13 @@
     // Close modal when clicking overlay (not the modal content)
     modalOverlay.addEventListener('click', (e) => {
       if (e.target === modalOverlay) {
+        modalOverlay.style.display = 'none';
+      }
+    });
+
+    // Close modal when pressing Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modalOverlay.style.display === 'flex') {
         modalOverlay.style.display = 'none';
       }
     });
