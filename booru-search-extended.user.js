@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Booru Search Extended
-// @version      1.4
+// @version      1.5
 // @description  Advanced tag builder with tree-based UI and robust parsing - works on multiple booru sites
 // @author       ferret-terref
 // @homepageURL  https://github.com/ferret-terref/booru-search-extended
@@ -27,6 +27,9 @@
   const COMPACT_KEY = 'tqb-compact';
   const AUTO_SUBMIT_KEY = 'tqb-auto-submit';
   const SHOW_PREVIEW_KEY = 'tqb-show-preview';
+
+  const TAG_ENABLED_ICON = '👁️';
+  const TAG_DISABLED_ICON = '🙈';
 
   // Site configuration for different booru sites
   const SITE_CONFIGS = {
@@ -260,12 +263,18 @@
         .tqb-tree-item { margin: var(--tqb-spacing-sm) 0; background: transparent; }
         .tqb-tree-group { border-left: 2px solid var(--tqb-border-color-alt); padding-left: var(--tqb-spacing-md); margin-left: var(--tqb-spacing-sm); }
         .tqb-tag-item { background: var(--tqb-bg-tertiary); padding: var(--tqb-spacing-sm) .6rem; border-radius: var(--tqb-radius-sm); display: inline-flex; align-items: flex-start; gap: var(--tqb-spacing-sm); margin: var(--tqb-spacing-sm); cursor: grab; max-width: 100%; min-width: 0; }
+        .tqb-tag-item.tqb-disabled { opacity: 0.4; background: var(--tqb-bg-secondary); }
+        .tqb-tag-item.tqb-disabled .tqb-tag-label { text-decoration: line-through; }
         .tqb-tag-item:active { cursor: grabbing; }
         .tqb-tag-item.tqb-dragging { opacity: 0.5; transform: rotate(5deg); }
         .tqb-tag-item.tqb-drag-over { border: 2px dashed var(--tqb-accent-blue); background: var(--tqb-accent-blue-dark); }
         .tqb-tag-label { font-size: var(--tqb-font-sm); color: var(--tqb-text-primary); word-break: break-word; line-height: 1.3; flex: 1; min-width: 0; }
         .tqb-tag-btn { background: transparent; border: none; color: var(--tqb-text-secondary); cursor: pointer; padding: var(--tqb-spacing-sm); border-radius: var(--tqb-spacing-sm); font-size: var(--tqb-font-sm); }
         .tqb-tag-btn:hover { background: var(--tqb-bg-hover); color: var(--tqb-text-primary); }
+        .tqb-tag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .tqb-tag-btn:disabled:hover { background: transparent; color: var(--tqb-text-secondary); }
+        .tqb-toggle-visibility-btn { color: var(--tqb-accent-green); filter: grayscale(1); }
+        .tqb-toggle-visibility-btn:hover { background: var(--tqb-accent-green); color: white; }
         .tqb-move-btn { color: var(--tqb-accent-blue); }
         .tqb-move-btn:hover { background: var(--tqb-accent-blue-dark); color: white; }
         .tqb-group-header { color: var(--tqb-accent-blue); font-weight: 500; margin-bottom: var(--tqb-spacing-sm); font-size: var(--tqb-font-sm); }
@@ -1071,13 +1080,18 @@
 
     /** Build query string for a single tag item (recursive) */
     function buildQueryItem(item) {
+      // Skip disabled items
+      if (item.enabled === false) return null;
+
       if (item.op === 'or') {
         // Ensure items is an array before mapping
         if (!Array.isArray(item.items)) {
           console.warn('OR group items is not an array, treating as empty');
           return '( )';
         }
-        return `( ${item.items.map(buildQueryItem).join(' ~ ')} )`;
+        const enabledItems = item.items.map(buildQueryItem).filter(Boolean);
+        if (enabledItems.length === 0) return null;
+        return `( ${enabledItems.join(' ~ ')} )`;
       }
       if (item.op === 'not') return `-${item.tagValue}`;
       if (item.op === 'fuzzy') return `${item.tagValue}~`;
@@ -1093,7 +1107,7 @@
         tags = [];
       }
 
-      return tags.map(buildQueryItem).join(' ').trim();
+      return tags.map(buildQueryItem).filter(Boolean).join(' ').trim();
     }
 
     /** Render the tag tree and preview */
@@ -1121,14 +1135,20 @@
     }
 
     /** Render a single tree item (tag or OR group) */
-    function renderTreeItem(item, path) {
+    function renderTreeItem(item, path, parentDisabled = false) {
       const div = document.createElement('div');
       div.className = 'tqb-tree-item';
 
       if (item.op === 'or') {
         // OR group
+        const isEnabled = item.enabled !== false;
+        const isActuallyDisabled = parentDisabled || !isEnabled;
+        const eyeIcon = isActuallyDisabled ? TAG_DISABLED_ICON : TAG_ENABLED_ICON;
+        const disabledClass = isActuallyDisabled ? ' tqb-disabled' : '';
+
         div.innerHTML = `
-          <div class="tqb-tag-item" draggable="true" data-path="${path.join(',')}">
+          <div class="tqb-tag-item${disabledClass}" draggable="true" data-path="${path.join(',')}">
+            <button class="tqb-tag-btn tqb-toggle-visibility-btn" title="Toggle visibility" aria-label="Toggle group visibility">${eyeIcon}</button>
             <span class="tqb-tag-label">OR Group (${item.items.length} items)</span>
             <button class="tqb-tag-btn tqb-move-btn" title="Move up" aria-label="Move OR group up">↑</button>
             <button class="tqb-tag-btn tqb-move-btn" title="Move down" aria-label="Move OR group down">↓</button>
@@ -1137,8 +1157,14 @@
           </div>
         `;
 
-        const [moveUpBtn, moveDownBtn, addBtn, deleteBtn] = div.querySelectorAll('.tqb-tag-btn');
+        const [toggleBtn, moveUpBtn, moveDownBtn, addBtn, deleteBtn] = div.querySelectorAll('.tqb-tag-btn');
 
+        toggleBtn.onclick = (e) => {
+          e.stopPropagation();
+          item.enabled = !isEnabled;
+          saveStorage();
+          render();
+        };
         moveUpBtn.onclick = (e) => {
           e.stopPropagation();
           moveItem(path, -1);
@@ -1152,7 +1178,8 @@
           if (tagName && tagName.trim()) {
             item.items.push({
               op: 'and',
-              tagValue: tagName.trim()
+              tagValue: tagName.trim(),
+              enabled: true
             });
             saveStorage();
             render();
@@ -1173,7 +1200,7 @@
 
         item.items.forEach((subItem, subIndex) => {
           const subPath = [...path, 'items', subIndex];
-          const subEl = renderTreeItem(subItem, subPath);
+          const subEl = renderTreeItem(subItem, subPath, isActuallyDisabled);
           groupDiv.appendChild(subEl);
         });
 
@@ -1188,8 +1215,15 @@
           'wildcard': 'WILDCARD: '
         };
 
+        const isEnabled = item.enabled !== false;
+        const isActuallyDisabled = parentDisabled || !isEnabled;
+        const eyeIcon = isActuallyDisabled ? TAG_DISABLED_ICON : TAG_ENABLED_ICON;
+        const disabledClass = isActuallyDisabled ? ' tqb-disabled' : '';
+        const toggleDisabled = parentDisabled ? ' disabled' : '';
+
         div.innerHTML = `
-          <div class="tqb-tag-item" draggable="true" data-path="${path.join(',')}">
+          <div class="tqb-tag-item${disabledClass}" draggable="true" data-path="${path.join(',')}">
+            <button class="tqb-tag-btn tqb-toggle-visibility-btn" title="Toggle visibility" aria-label="Toggle tag visibility"${toggleDisabled}>${eyeIcon}</button>
             <span class="tqb-tag-label">${opLabels[item.op]}${item.tagValue}</span>
             <button class="tqb-tag-btn tqb-move-btn" title="Move up" aria-label="Move tag up">↑</button>
             <button class="tqb-tag-btn tqb-move-btn" title="Move down" aria-label="Move tag down">↓</button>
@@ -1198,8 +1232,20 @@
           </div>
         `;
 
-        const [moveUpBtn, moveDownBtn, editBtn, deleteBtn] = div.querySelectorAll('.tqb-tag-btn');
+        const [toggleBtn, moveUpBtn, moveDownBtn, editBtn, deleteBtn] = div.querySelectorAll('.tqb-tag-btn');
 
+        toggleBtn.onclick = (e) => {
+          e.stopPropagation();
+          // Don't allow toggling if parent is disabled
+          if (parentDisabled) return;
+
+          const parent = getItemAtPath(path);
+          if (parent) {
+            parent.enabled = !isEnabled;
+            saveStorage();
+            render();
+          }
+        };
         moveUpBtn.onclick = (e) => {
           e.stopPropagation();
           moveItem(path, -1);
@@ -1380,6 +1426,16 @@
       }
     }
 
+    /** Get item at specified path */
+    function getItemAtPath(path) {
+      if (path.length === 1) {
+        return tags[path[0]];
+      } else if (path.length === 3 && path[1] === 'items') {
+        return tags[path[0]].items[path[2]];
+      }
+      return null;
+    }
+
     /** Check if a tag already exists at the top level (same level check only) */
     function isDuplicateTag(tagValue, op) {
       // Only check top-level tags, not nested OR groups
@@ -1401,7 +1457,8 @@
         // Create OR group from space-separated tags
         const items = val.split(/\s+/).filter(Boolean).map(x => ({
           op: 'and',
-          tagValue: x
+          tagValue: x,
+          enabled: true
         }));
 
         // Check for duplicates in the OR group
@@ -1416,7 +1473,8 @@
         if (items.length > 0) {
           tags.push({
             op: 'or',
-            items
+            items,
+            enabled: true
           });
         }
       } else {
@@ -1430,7 +1488,8 @@
         // Add single tag
         tags.push({
           op,
-          tagValue: val
+          tagValue: val,
+          enabled: true
         });
       }
 

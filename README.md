@@ -11,13 +11,15 @@ Light Theme | Dark Theme
 ## Features
 
 - **Visual Tag Builder** - Build complex search queries using an intuitive tree-based UI
+- **Toggle Tag Visibility** - Enable/disable individual tags (👁️/🙈) to test different search variations without deleting them
 - **Multi-Site Support** - Works seamlessly across 7+ major booru sites
 - **Advanced Query Operators** - Support for AND, OR, NOT, fuzzy search, and wildcards
-- **Favorites System** - Save and manage your frequently used search queries
+- **Favorites System** - Save, search, sort, and manage your frequently used search queries with import/export
 - **Drag & Drop** - Reorder tags easily with drag and drop functionality
 - **Query Parsing** - Import existing search queries and edit them visually
-- **Persistent Storage** - Your tags and favorites are saved per-site using localStorage
-- **Dark Theme** - Clean, modern dark interface that integrates with booru sites
+- **Customizable Interface** - Light/dark themes, compact mode, auto-submit, and toggle preview visibility
+- **Persistent Storage** - Your tags, favorites, and settings are saved per-site using localStorage
+- **Keyboard Shortcuts** - Quick actions for power users
 
 ## Supported Sites
 
@@ -65,9 +67,27 @@ Light Theme | Dark Theme
 ### Managing Favorites
 
 1. Build a complex query you want to reuse
-2. Click "💾 Save Current" and give it a name
-3. Access saved queries via "⭐ View Favorites"
+2. Click "💾 Save Current" and give it a name (auto-suggests based on your tags)
+3. Access saved queries via "View All" or search them in the sidebar
 4. Click any favorite to instantly load that query
+5. Edit favorite names with the ✏️ button
+6. Export/import favorites via the modal for backup or sharing
+
+### Toggle Tag Visibility
+
+- Click the 👁️ (eye) icon next to any tag to disable it temporarily
+- Disabled tags show 🙈 and are greyed out with strikethrough
+- Disabled tags are excluded from the generated query
+- Perfect for testing search variations without deleting tags
+- When an OR group is disabled, all child tags are also disabled
+
+### Customizing the Interface
+
+1. Click "⚙️ Preferences" to access settings
+2. **Theme**: Toggle between dark and light modes
+3. **Spacing**: Switch between regular and compact layouts
+4. **Auto-Submit**: Automatically submit the search form when pasting tags
+5. **Show Preview**: Toggle visibility of the query preview section
 
 ### Importing Existing Queries
 
@@ -120,43 +140,56 @@ Light Theme | Dark Theme
 2. Select "WILDCARD" and add: `girl*`
 3. Result: `anime~ girl*`
 
-### Example 5: Saving a Complex Search
+### Example 5: Testing Search Variations
 
-**Goal**: Save a detailed character search for later use
+**Goal**: Try different combinations without rebuilding the query
 
 **Steps**:
-1. Build query: `( original_character ~ oc ) rating:safe -photo`
-2. Click "💾 Save Current"
-3. Name it: "Safe OC Art"
-4. Load anytime from favorites
+1. Build query: `cat rating:safe -photo animated`
+2. Click �️ on `animated` to disable it - tests without that tag
+3. Click 👁️ on `rating:safe` to disable it - tests unrated content
+4. Re-enable tags by clicking 🙈 to restore them
+5. Find the perfect combination, then paste to search
 
 ## Keyboard Shortcuts
 
-- **Enter** - Add tag (when focused on tag input field)
+- **Enter** (in tag input) - Add tag to builder
+- **Ctrl + Enter** - Paste tags to page search input
+- **Ctrl + S** - Save current tags as favorite
+- **Ctrl + Shift + X** - Copy tags from page input to builder
+- **Escape** - Close any open modal
 
 ## Tips & Tricks
 
-- Use the toggle button to hide/show the builder when not needed
-- Favorites are saved per-site, so organize differently for each booru
-- The preview always shows exactly what will be searched
-- Edit tags in-place by clicking the ✏️ button
-- Use the search filter in favorites to quickly find saved queries
-- Tags can be moved up/down with ↑/↓ buttons for precise ordering
+- **Quick Testing**: Use the 👁️ toggle to quickly test variations of your search without rebuilding
+- **Organized Favorites**: Use descriptive names when saving - they're searchable and sortable
+- **Drag Reordering**: Drag tags to reorder them for different search priorities
+- **Import/Export**: Back up your favorites or share them between browsers
+- **Auto-Submit**: Enable in preferences to automatically search when pasting tags
+- **Hide Builder**: Use the toggle button at the top to hide/show the builder when not needed
+- **Preview Section**: Toggle in preferences if you want more screen space
+- **Per-Site Storage**: Each booru site has separate tags, favorites, and settings
+- **Smart Name Suggestions**: When saving favorites, the name auto-suggests based on your tags
 
 ## Troubleshooting
 
 **Builder not appearing?**
 - Check that you're on a supported site
-- Try refreshing the page
 - Verify your userscript manager is enabled
-
-**Query not copying to search?**
-- Make sure you clicked "📤 Paste to input"
-- Some sites may require you to press Enter after pasting
+- Try refreshing the page
 
 **Tags not saving?**
 - Check that localStorage is enabled in your browser
 - Some privacy extensions may block storage
+- Try disabling strict tracking protection for the site
+
+**Favorites not importing?**
+- Ensure the JSON file is valid and from a Booru Search Extended export
+- Check the browser console for error messages
+
+**Toggle visibility not working?**
+- If a parent OR group is disabled, child tags cannot be enabled
+- Re-enable the parent group first
 
 ## Contributing
 
