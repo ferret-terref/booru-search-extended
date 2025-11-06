@@ -2,7 +2,11 @@
 
 A powerful userscript that enhances tag searching on multiple booru image boards with an advanced tag builder interface.
 
-<img width="315" height="863" alt="image" src="https://github.com/user-attachments/assets/67870f05-fa05-4c8b-8d12-2ada07c3828d" />
+Light Theme | Dark Theme
+:-:|:-:|
+<img width="280" height="595" alt="06_11_2025_21_44_12" src="https://github.com/user-attachments/assets/b044c480-6edb-46e2-991f-2487a7026c7b" /> | <img width="280" height="595" alt="06_11_2025_21_45_17" src="https://github.com/user-attachments/assets/9755caac-4c13-4bd7-b29f-20f6c1786901" />
+
+
 
 ## Features
 
