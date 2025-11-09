@@ -323,7 +323,7 @@
         .tqb-help-content { background: transparent; }
         .tqb-help-content h4 { background: transparent; }
         .tqb-help-content > div { background: transparent; }
-        .tqb-shortcut-item { display: flex; justify-content: space-between; align-items: center; padding: var(--tqb-spacing-md); margin-bottom: var(--tqb-spacing-sm); background: var(--tqb-bg-secondary); border-radius: var(--tqb-radius-sm); }
+        .tqb-shortcut-item { display: flex; justify-content: space-between; align-items: center; padding: var(--tqb-spacing-md); margin-bottom: var(--tqb-spacing-sm); background: transparent; border-radius: var(--tqb-radius-sm); }
         .tqb-shortcut-item strong { color: var(--tqb-accent-blue); font-family: monospace; min-width: 140px; }
         .tqb-shortcut-item span { color: var(--tqb-text-secondary); flex: 1; }
         /* Dialog */
@@ -358,6 +358,22 @@
         .tqb-toggle-track { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--tqb-bg-tertiary); border-radius: 20px; transition: 0.3s; }
         .tqb-toggle-thumb { position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
         .tqb-select-sort { border: none; border-radius: var(--tqb-radius-sm); padding: var(--tqb-spacing-sm); font-size: var(--tqb-font-md); background: var(--tqb-bg-input); color: var(--tqb-text-primary); }
+        /* Toast notifications */
+        .tqb-toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 100000; display: flex; flex-direction: column; gap: var(--tqb-spacing-sm); pointer-events: none; }
+        .tqb-toast { background: var(--tqb-bg-primary); color: var(--tqb-text-primary); padding: var(--tqb-spacing-md) var(--tqb-spacing-lg); border-radius: var(--tqb-radius-md); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); display: flex; align-items: center; gap: var(--tqb-spacing-md); min-width: 250px; max-width: 400px; pointer-events: auto; animation: tqb-toast-slide-in 0.3s ease-out; border-left: 3px solid var(--tqb-accent-blue); }
+        .tqb-toast.tqb-toast-error { border-left-color: #ef4444; }
+        .tqb-toast.tqb-toast-success { border-left-color: #10b981; }
+        .tqb-toast-icon { font-size: 1.2rem; flex-shrink: 0; }
+        .tqb-toast-message { flex: 1; font-size: var(--tqb-font-md); }
+        @keyframes tqb-toast-slide-in {
+          from { transform: translateX(400px); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes tqb-toast-slide-out {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(400px); opacity: 0; }
+        }
+        .tqb-toast.tqb-toast-hiding { animation: tqb-toast-slide-out 0.3s ease-out forwards; }
     `;
 
   // Initialize for current site
@@ -411,6 +427,43 @@
 
   waitForElements([siteConfig.containerSelector, siteConfig.inputSelector], (container, inputEl) => {
     console.log(`Tag Builder: Found container and input elements`);
+
+    // Toast notification system
+    let toastContainer = null;
+
+    function getToastContainer() {
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'tqb-toast-container';
+        document.body.appendChild(toastContainer);
+      }
+      return toastContainer;
+    }
+
+    function showToast(message, type = 'info', duration = 3000) {
+      const container = getToastContainer();
+      const toast = document.createElement('div');
+      toast.className = `tqb-toast tqb-toast-${type}`;
+
+      const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+
+      toast.innerHTML = `
+        <span class="tqb-toast-icon">${icon}</span>
+        <span class="tqb-toast-message">${message}</span>
+      `;
+
+      container.appendChild(toast);
+
+      // Auto-remove after duration
+      setTimeout(() => {
+        toast.classList.add('tqb-toast-hiding');
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300); // Match animation duration
+      }, duration);
+    }
 
     // Toggle button (inline above builder)
     const toggleBtn = document.createElement('button');
@@ -513,10 +566,12 @@
       '⚙️ Preferences',
       `<div class="tqb-help-content" style="padding: 1rem;">
                 <h4 class="tqb-section-title">⚙️ Settings</h4>
-                ${generateSettingToggle('🎨 Theme', 'tqb-theme-toggle', 'Dark', 'Light')}
-                ${generateSettingToggle('📐 Spacing', 'tqb-compact-toggle', 'Regular', 'Compact')}
-                ${generateSettingToggle('🚀 Auto-Submit', 'tqb-auto-submit-toggle', 'Off', 'On')}
-                ${generateSettingToggle('👁️ Show Preview', 'tqb-show-preview-toggle', 'Hidden', 'Visible')}
+                <div class="tqb-settings-section">
+                  ${generateSettingToggle('🎨 Theme', 'tqb-theme-toggle', 'Dark', 'Light')}
+                  ${generateSettingToggle('📐 Spacing', 'tqb-compact-toggle', 'Regular', 'Compact')}
+                  ${generateSettingToggle('🚀 Auto-Submit', 'tqb-auto-submit-toggle', 'Off', 'On')}
+                  ${generateSettingToggle('👁️ Show Preview', 'tqb-show-preview-toggle', 'Hidden', 'Visible')}
+                </div>
                 <h4 class="tqb-section-title-spaced">⌨️ Keyboard Shortcuts</h4>
                 <div class="tqb-shortcut-item">
                     <strong>Ctrl + Enter</strong>
@@ -618,20 +673,6 @@
             close(onEscape());
           }
         });
-      });
-    }
-
-    /** Show custom alert dialog */
-    function showAlert(message) {
-      return createDialog({
-        content: `<div class="tqb-dialog-message">${escapeHtml(message)}</div>`,
-        buttons: [{
-          text: 'OK',
-          className: 'tqb-dialog-btn-primary',
-          onClick: () => undefined
-        }],
-        onEscape: () => undefined,
-        onOverlayClick: () => undefined
       });
     }
 
@@ -861,6 +902,7 @@
       favorites = favorites.filter(fav => fav.id !== id);
       saveFavorites();
       renderAllFavorites();
+      showToast('Favorite deleted', 'success', 2000);
     }
 
     /** Edit a favorite's name */
@@ -873,13 +915,14 @@
         favorite.name = newName.trim();
         saveFavorites();
         renderAllFavorites();
+        showToast('Favorite renamed', 'success', 2000);
       }
     }
 
     /** Export favorites to a JSON file */
     function exportFavorites() {
       if (favorites.length === 0) {
-        showAlert('No favorites to export!');
+        showToast('No favorites to export', 'error', 2000);
         return;
       }
 
@@ -895,7 +938,7 @@
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      showAlert(`Exported ${favorites.length} favorite(s)! 📤`);
+      showToast(`Exported ${favorites.length} favorite(s)`, 'success', 3000);
     }
 
     /** Import favorites from a JSON file */
@@ -913,7 +956,7 @@
           const imported = JSON.parse(text);
 
           if (!Array.isArray(imported)) {
-            showAlert('Invalid file format: Expected an array of favorites');
+            showToast('Invalid file format: Expected an array of favorites', 'error', 4000);
             return;
           }
 
@@ -926,7 +969,7 @@
           );
 
           if (!valid) {
-            showAlert('Invalid file format: Missing required fields');
+            showToast('Invalid file format: Missing required fields', 'error', 4000);
             return;
           }
 
@@ -952,10 +995,10 @@
 
           saveFavorites();
           renderAllFavorites();
-          showAlert(`Imported ${imported.length} favorite(s)! 📥`);
+          showToast(`Imported ${imported.length} favorite(s)`, 'success', 3000);
         } catch (err) {
           console.error('Import error:', err);
-          showAlert('Error importing file: ' + err.message);
+          showToast(`Error importing file: ${err.message}`, 'error', 4000);
         }
       };
 
@@ -967,6 +1010,7 @@
       tags = JSON.parse(JSON.stringify(favorite.tags)); // Deep clone
       saveStorage();
       render();
+      showToast(`Loaded: ${favorite.name}`, 'success', 2000);
     }
 
     /** Generate HTML for a favorite item */
@@ -997,7 +1041,6 @@
           const favorite = favorites.find(fav => fav.id === id);
           if (favorite) {
             loadFavorite(favorite);
-            showAlert(`Loaded: ${favorite.name} ✅`);
             if (targetList === modalFavoritesList) {
               modalOverlay.style.display = 'none';
             }
@@ -1506,10 +1549,13 @@
           tags = parseQuery(val);
           saveStorage();
           render();
+          showToast('Tags copied from search input', 'success', 2000);
         } catch (e) {
-          console.error('Parse error:', e);
-          showAlert('Error parsing query: ' + e.message);
+          console.error('Error parsing query:', e);
+          showToast('Error parsing tags from input', 'error', 3000);
         }
+      } else {
+        showToast('Search input is empty', 'error', 2000);
       }
     });
 
@@ -1540,7 +1586,7 @@
     // --- Clear All Tags ---
     clearAllBtn.addEventListener('click', async () => {
       if (tags.length === 0) {
-        showAlert('No tags to clear!');
+        showToast('No tags to clear', 'error', 2000);
         return;
       }
 
@@ -1548,14 +1594,14 @@
         tags = [];
         saveStorage();
         render();
-        showAlert('All tags cleared! 🗑️');
+        showToast('All tags cleared', 'success', 2000);
       }
     });
 
     // --- Save Favorite ---
     saveFavoriteBtn.addEventListener('click', async () => {
       if (tags.length === 0) {
-        showAlert('No tags to save! Add some tags first.');
+        showToast('No tags to save', 'error', 2000);
         return;
       }
 
@@ -1565,7 +1611,7 @@
       const name = await showPrompt('Enter a name for this favorite search:', defaultName);
       if (name && name.trim()) {
         addFavorite(name.trim(), tags);
-        showAlert('Favorite saved! 💾');
+        showToast(`Saved favorite: ${name}`, 'success', 3000);
       }
     });
 
