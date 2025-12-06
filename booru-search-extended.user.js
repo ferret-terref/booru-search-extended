@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Booru Search Extended
-// @version      1.7
+// @version      1.8
 // @description  Advanced tag builder with tree-based UI and robust parsing - works on multiple booru sites
 // @author       ferret-terref
 // @license      MIT
@@ -54,6 +54,7 @@
         .content-post { max-width: calc(100% - 320px) !important; }
         #tag-sidebar { min-width: 300px !important; width: 300px !important; }
         .tag-search { min-width: 280px !important; }
+        #container { grid-template-columns: 300px auto !important; }
       `
     },
     'gelbooru.com': {
@@ -1044,7 +1045,12 @@
         query: tagData.map(buildQueryItem).join(' ').trim(),
         createdAt: new Date().toISOString()
       };
+
+      // Reload to ensure latest
+      loadFavorites();
       favorites.unshift(favorite); // Add to beginning
+
+      // Save and re-render
       saveFavorites();
       renderAllFavorites();
     }
