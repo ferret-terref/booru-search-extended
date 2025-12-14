@@ -1,71 +1,46 @@
-# Ferret Userscripts
+# Booru Search Extended
 
-A collection of userscripts to enhance your browsing experience on booru sites and Stash.
+A powerful userscript that enhances tag searching on multiple booru image boards with an advanced tag builder interface.
 
-## 📁 Repository Structure
+Light Theme | Dark Theme
+:-:|:-:|
+<img width="280" height="595" alt="06_11_2025_21_44_12" src="https://github.com/user-attachments/assets/b044c480-6edb-46e2-991f-2487a7026c7b" /> | <img width="280" height="595" alt="06_11_2025_21_45_17" src="https://github.com/user-attachments/assets/9755caac-4c13-4bd7-b29f-20f6c1786901" />
 
-### [/booru](booru/)
-Userscripts for booru image boards (Rule34, Gelbooru, Danbooru, etc.)
-- **Booru Search Extended** - Advanced tag builder with tree-based UI
-- **Booru Downloader** - Quick Ctrl+S downloads with metadata
-- **Booru Tag Blocker** - Front-end content filtering
+## Features
 
-### [/stash](stash/)
-Userscripts for [Stash](https://github.com/stashapp/stash) - a self-hosted media organizer
-- **Stash Gallery URL Opener** - Quick-access buttons for gallery URLs
-- **Gallery → Stash Updater** - Import metadata from nhentai, e-hentai, etc.
+- **Visual Tag Builder** - Build complex search queries using an intuitive tree-based UI
+- **Toggle Tag Visibility** - Enable/disable individual tags (👁️/🙈) to test different search variations without deleting them
+- **Multi-Site Support** - Works seamlessly across 7+ major booru sites
+- **Advanced Query Operators** - Support for AND, OR, NOT, fuzzy search, and wildcards
+- **Favorites System** - Save, search, sort, and manage your frequently used search queries with import/export
+- **Drag & Drop** - Reorder tags easily with drag and drop functionality
+- **Query Parsing** - Import existing search queries and edit them visually
+- **Customizable Interface** - Light/dark themes, compact mode, auto-submit, and toggle preview visibility
+- **Persistent Storage** - Your tags, favorites, and settings are saved per-site using localStorage
+- **Keyboard Shortcuts** - Quick actions for power users
 
-## 🚀 Quick Start
+## Supported Sites
+
+- Rule34
+- Gelbooru
+- Danbooru
+- Safebooru
+- TBIB
+- Xbooru
+- Realbooru
+
+## Installation
 
 1. Install a userscript manager:
    - [Tampermonkey](https://www.tampermonkey.net/) (Chrome, Firefox, Safari, Edge)
    - [Violentmonkey](https://violentmonkey.github.io/) (Chrome, Firefox, Edge)
    - [Greasemonkey](https://www.greasespot.net/) (Firefox)
 
-2. Browse to the script category you're interested in (booru or stash)
+2. Click here to install: [booru-search-extended.user.js](https://github.com/ferret-terref/ferret-userscripts/raw/refs/heads/main/booru/booru-search-extended.user.js)
 
-3. Click on the installation link for the script you want
+3. Your userscript manager will prompt you to install - click "Install"
 
-4. Your userscript manager will prompt you to install
-
-## 📜 Scripts
-
-### Booru Scripts
-
-| Script | Description | Sites |
-|--------|-------------|-------|
-| [Booru Search Extended](booru/booru-search-extended.md) | Advanced tag builder with visual tree UI, favorites, and query parsing | Rule34, Gelbooru, Danbooru, Safebooru, TBIB, Xbooru, Realbooru |
-| [Booru Downloader](booru/booru-downloader.md) | Press Ctrl+S to download with customizable filenames and metadata | Rule34, Danbooru, E621, Gelbooru, 4chan, and more |
-| [Booru Tag Blocker](booru/tag-blocker.md) | Client-side tag filtering with hide/blur options | Rule34, Gelbooru, Danbooru, E621, Safebooru, TBIB, Xbooru, Realbooru |
-
-### Stash Scripts
-
-| Script | Description | Sites |
-|--------|-------------|-------|
-| [Stash Gallery URL Opener](stash/stash-gallery-url-opener.md) | Add "Open" buttons next to gallery URLs | Stash localhost:9999 |
-| [Gallery → Stash Updater](stash/stash-update-gallery.md) | Auto-import gallery metadata via GraphQL | nhentai, e-hentai, exhentai |
-
-## 🌟 Featured: Booru Search Extended
-
-The flagship script of this collection - a powerful tag builder for booru sites:
-
-Light Theme | Dark Theme
-:-:|:-:|
-<img width="280" height="595" alt="Light theme screenshot" src="https://github.com/user-attachments/assets/b044c480-6edb-46e2-991f-2487a7026c7b" /> | <img width="280" height="595" alt="Dark theme screenshot" src="https://github.com/user-attachments/assets/9755caac-4c13-4bd7-b29f-20f6c1786901" />
-
-**Key Features:**
-- Visual tag builder with tree-based UI
-- Toggle tag visibility without deleting
-- Favorites system with import/export
-- Drag & drop reordering
-- Query parsing and validation
-- Site-specific syntax support
-- Light/dark themes
-- Keyboard shortcuts
-
-[View full documentation →](booru/booru-search-extended.md)
-
-## Troubleshooting
+## Usage
 
 ### Basic Tag Building
 
@@ -169,7 +144,7 @@ Light Theme | Dark Theme
 
 **Steps**:
 1. Build query: `cat rating:safe -photo animated`
-2. Click �️ on `animated` to disable it - tests without that tag
+2. Click 👁️ on `animated` to disable it - tests without that tag
 3. Click 👁️ on `rating:safe` to disable it - tests unrated content
 4. Re-enable tags by clicking 🙈 to restore them
 5. Find the perfect combination, then paste to search
@@ -214,27 +189,10 @@ Light Theme | Dark Theme
 - If a parent OR group is disabled, child tags cannot be enabled
 - Re-enable the parent group first
 
-## 📖 Documentation
+## License
 
-Each script has its own detailed documentation in its respective folder:
-- [/booru/README.md](booru/README.md) - Overview of booru scripts
-- [/stash/README.md](stash/README.md) - Overview of stash scripts
-- Individual `.md` files for each script with installation and usage instructions
+MIT License - see [LICENSE](../LICENSE) file for details
 
-## 🤝 Contributing
+## Author
 
-Issues and pull requests are welcome! Please check the [issues page](https://github.com/ferret-terref/ferret-userscripts/issues) before submitting.
-
-## 📄 License
-
-All scripts are licensed under the MIT License - see [LICENSE](LICENSE) file for details
-
-## ✨ Author
-
-Created by **ferret-terref**
-
----
-
-### Previously Known As
-
-This repository was previously named `booru-search-extended`. It has been renamed to `ferret-userscripts` to better reflect the expanded scope of the collection.
+Created by ferret-terref
