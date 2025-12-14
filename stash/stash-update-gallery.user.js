@@ -12,7 +12,11 @@
 // @match        *://nhentai.to/g/*
 // @match        *://e-hentai.org/g/*/*
 // @match        *://exhentai.org/g/*/*
-// @grant        none
+// @match        *://www.luscious.net/albums/*
+// @grant        GM_xmlhttpRequest
+// @connect      localhost
+// @connect      127.0.0.1
+// @connect      *
 // @run-at       document-idle
 // ==/UserScript==
 
@@ -234,6 +238,72 @@
         const gj = document.querySelector('#gj');
         return gj ? gj.innerText.trim() : '';
       }
+    },
+
+    'www.luscious.net': {
+      name: 'luscious.net',
+      getTags: async function () {
+        const tags = [];
+
+        // Wait for album info to load
+        try {
+          await waitForElement('.album-info', 5000);
+        } catch (e) {
+          console.warn('[Stash Updater] Album info not found, continuing anyway');
+        }
+
+        // Get Genres, Audiences, and Content tags from album-info
+        document.querySelectorAll('.album-info .album-info-item').forEach(item => {
+          const strong = item.querySelector('strong');
+          if (!strong) return;
+
+          const label = strong.textContent.trim();
+          let prefix = '';
+
+          if (label.toLowerCase().includes('genre')) {
+            prefix = 'Genre: ';
+          } else if (label.toLowerCase().includes('audience')) {
+            prefix = 'Audience: ';
+          } else if (label.toLowerCase().includes('content')) {
+            prefix = 'Content: ';
+          } else {
+            return; // Skip other items like Created, Last Updated
+          }
+
+          // Get all tags in this item
+          item.querySelectorAll('.o-tag, a').forEach(link => {
+            const tagText = link.textContent.trim();
+            if (tagText && tagText !== label) {
+              tags.push(prefix + tagText);
+            }
+          });
+        });
+
+        // Get regular tags from o-tag--inline sections
+        document.querySelectorAll('.o-tag--inline .o-tag--secondary').forEach(tagDiv => {
+          const tagText = tagDiv.textContent.trim();
+          // Remove the count in parentheses if present (e.g., "fun (440)" -> "fun")
+          const tagName = tagText.replace(/\s*\(\d+[KM]?\)$/, '');
+          if (tagName) {
+            tags.push(tagName);
+          }
+        });
+
+        return tags;
+      },
+      getTitle: async function () {
+        try {
+          const h1 = await waitForElement('h1.o-h1.album-heading', 5000);
+          return h1.textContent.trim();
+        } catch (e) {
+          console.warn('[Stash Updater] Title not found');
+          return '';
+        }
+      },
+      getDescription: function () {
+        const desc = document.querySelector('.album-description .markdown');
+        return desc ? desc.textContent.trim() : '';
+      }
     }
   };
 
@@ -249,6 +319,35 @@
   console.log(`[Stash Updater] Loaded configuration for: ${currentSiteConfig.name}`);
 
   // === Utility functions ===
+
+  // Wait for element to appear in DOM
+  function waitForElement(selector, timeout = 10000) {
+    return new Promise((resolve, reject) => {
+      const element = document.querySelector(selector);
+      if (element) {
+        resolve(element);
+        return;
+      }
+
+      const observer = new MutationObserver(() => {
+        const element = document.querySelector(selector);
+        if (element) {
+          observer.disconnect();
+          resolve(element);
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+
+      setTimeout(() => {
+        observer.disconnect();
+        reject(new Error(`Timeout waiting for element: ${selector}`));
+      }, timeout);
+    });
+  }
 
   // Get current URL without the stashGalleryId query parameter
   function getCleanUrl() {
@@ -473,9 +572,9 @@
 
   // === Main update function ===
   async function updateGallery(galleryId) {
-    const scrapedTags = currentSiteConfig.getTags();
-    const title = currentSiteConfig.getTitle();
-    const description = currentSiteConfig.getDescription ? currentSiteConfig.getDescription() : '';
+    const scrapedTags = await currentSiteConfig.getTags();
+    const title = await currentSiteConfig.getTitle();
+    const description = currentSiteConfig.getDescription ? await currentSiteConfig.getDescription() : '';
     if (!scrapedTags.length && !title) throw new Error('No tags or title found.');
 
     const tagMap = await fetchAllTags();
@@ -1052,7 +1151,7 @@
         if (gallery) {
           currentGalleryInfo = gallery;
           galleryInput.style.borderColor = '#4CAF50';
-          renderGalleryDisplay(gallery);
+          await renderGalleryDisplay(gallery);
         } else {
           currentGalleryInfo = null;
           galleryInput.style.borderColor = '#f44336';
@@ -1070,11 +1169,11 @@
   });
 
   // Unified render function for displaying gallery data
-  function renderGalleryDisplay(galleryInfo = null, showWarning = true) {
+  async function renderGalleryDisplay(galleryInfo = null, showWarning = true) {
     try {
-      const scrapedTags = currentSiteConfig.getTags();
-      const scrapedTitle = currentSiteConfig.getTitle();
-      const scrapedDescription = currentSiteConfig.getDescription ? currentSiteConfig.getDescription() : '';
+      const scrapedTags = await currentSiteConfig.getTags();
+      const scrapedTitle = await currentSiteConfig.getTitle();
+      const scrapedDescription = currentSiteConfig.getDescription ? await currentSiteConfig.getDescription() : '';
       const scrapedUrl = getCleanUrl();
 
       const isComparison = galleryInfo !== null;
@@ -1125,9 +1224,9 @@
   } else {
     // Try to auto-populate gallery ID by searching for matching title
     (async function autoPopulateGalleryId() {
-      const scrapedTitle = currentSiteConfig.getTitle();
+      const scrapedTitle = await currentSiteConfig.getTitle();
       if (!scrapedTitle) {
-        renderGalleryDisplay();
+        await renderGalleryDisplay();
         return;
       }
 
@@ -1139,11 +1238,11 @@
           galleryInput.value = match.id;
           galleryInput.dispatchEvent(new Event('input'));
         } else {
-          renderGalleryDisplay();
+          await renderGalleryDisplay();
         }
       } catch (err) {
         console.error('Auto-search error:', err);
-        renderGalleryDisplay();
+        await renderGalleryDisplay();
       }
     })();
   }
@@ -1157,7 +1256,7 @@
     }
 
     // Check for title mismatch before updating
-    const scrapedTitle = currentSiteConfig.getTitle();
+    const scrapedTitle = await currentSiteConfig.getTitle();
     if (!checkTitleMismatch(scrapedTitle, currentGalleryInfo?.title)) {
       status.innerText = '❌ Update cancelled - title mismatch';
       return;
@@ -1179,7 +1278,7 @@
       galleryInput.style.borderColor = '#555';
 
       // Display the updated gallery data (no warning needed post-update)
-      renderGalleryDisplay(result, false);
+      await renderGalleryDisplay(result, false);
       status.innerText = `✅ Updated gallery ${result.id} with ${result.tags.length} tags.`;
       console.log('Updated gallery data:', result);
     } catch (err) {
